@@ -1,6 +1,9 @@
 
 # Jobsite Weather Planner
 
+## Overview
+Build a responsive, single-file `index.html` dashboard for construction managers to select a jobsite on an interactive map, retrieve a seven-day Open-Meteo forecast, and review weather-based GO, CAUTION, or NO-GO ratings for crane lifts, concrete pours, and roofing. The initial version uses fixed 7:00 AM-5:00 PM jobsite-local hours. It shows weather values, risk explanations, missing-data warnings, and a visible planning-guidance disclaimer. The required app will be completed and validated before implementing the two extra features.
+
 ## Purpose
 Create a responsive web dashboard that helps construction managers compare crane lifts, concrete pours, and roofing work across the next seven days at a selected jobsite. The app will display simple weather-based GO, CAUTION, and NO-GO ratings with short explanations, supporting preliminary scheduling decisions rather than guaranteeing that conditions are safe.
 
@@ -114,3 +117,47 @@ The following two extra features are implemented separately, only after the requ
 - No address search or geocoding; jobsite selection is by clicking the map.
 - No native mobile apps or offline operation.
 - Weather ratings are planning guidance, not safety guarantees.
+
+## Build stages
+Build and validate the stages in order. Complete and validate all required app features before starting either extra feature. Keep the app in one `index.html` file suitable for GitHub Pages, test each stage before proceeding, and commit each completed stage.
+
+### Stage 1: Creating the visual mockup
+- **Build:** Create the page structure and responsive styling in `index.html`, with a header, collapsible threshold settings, map area, seven-day calendar, selected-day detail panel, loading/error states, and disclaimer. Use representative static content and a map placeholder; do not build forecast calculations yet.
+- **Check:** Verify the initial jobsite-selection prompt, desktop hierarchy, mobile vertical layout, readable labels, status colors/icons, and touch-friendly controls.
+- **Builds on:** Establishes the layout and interaction pattern for all later stages.
+- Commit the completed stage.
+
+### Stage 2: Connecting jobsite selection and forecast data
+- **Build:** Add interactive map selection, coordinate display, jobsite timezone, threshold controls, and Open-Meteo hourly forecast retrieval. Keep working hours fixed at 7:00 AM-5:00 PM local time.
+- **Check:** Verify that selecting or changing a map point refreshes the forecast; check units and local timestamps; inspect loading, failed-request, invalid-location, and incomplete-response states.
+- **Builds on:** Replaces the mockup's map and sample weather with real location and forecast data.
+- Commit the completed stage.
+
+### Stage 3: Calculating ratings and displaying the forecast
+- **Build:** Apply the documented hourly rules, missing-data handling, and worst-hour daily aggregation. Populate the seven-day activity calendar and expandable detail panel with weather values and explanations.
+- **Check:** Hand-check boundary cases for each activity, including thresholds, working-hour inclusion, worst-hour precedence, missing data, and unavailable forecasts. Verify displayed values have units and labels.
+- **Builds on:** Adds the primary planning workflow to the map and forecast connection.
+- Commit the completed stage.
+
+### Stage 4: Validating and publishing the required app
+- **Build:** Complete required-feature testing and perform the documented real-data validation for Denver: capture Open-Meteo hourly values for 7:00 AM-4:00 PM local time, calculate ratings by hand, compare with app results, and compare matching hourly temperature, wind, and precipitation forecasts with NWS.
+- **Check:** Record forecast differences without requiring exact agreement. Test the responsive layout and errors, publish the required single-file app to GitHub Pages, and confirm the deployed page loads, map/forecast work, and ratings match the hand calculations.
+- **Builds on:** Verifies the complete required app before extras; do not start either extra feature until this stage passes.
+- Commit the completed stage.
+
+### Stage 5: Adding Custom Working Hours
+- **Build:** As the first extra feature, add start/end time controls defaulting to 7:00 AM-5:00 PM in the jobsite's local timezone and recalculate daily ratings when they change.
+- **Check:** Verify valid time ranges, selected-hour inclusion behavior, recalculated day ratings/details, and that restoring the defaults reproduces the required app's ratings.
+- **Builds on:** Extends the validated fixed-hours calculation without changing the earlier required workflow.
+- Commit the completed stage.
+
+### Stage 6: Adding the Printable Jobsite Weather Report
+- **Build:** As a separate original extra feature, add a Print Report button and a printer-friendly seven-day report using the browser's built-in print functionality. Include coordinates, forecast dates, ratings, explanations, and safety disclaimer.
+- **Check:** Inspect print preview and printed output for completeness, legibility, page breaks, and absence of interactive-only controls. Verify the app still works on GitHub Pages as a single `index.html`.
+- **Builds on:** Adds the report after the required app and Custom Working Hours are complete.
+- Commit the completed stage.
+
+### Implementation notes
+- Avoid a build system or server-side dependencies.
+- Keep NWS as a validation comparison only, not an in-app forecast integration.
+- Thresholds remain simplified planning assumptions and must not be presented as safety guarantees.

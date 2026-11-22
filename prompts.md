@@ -43,3 +43,8 @@ This file records the requests made to the AI coding agent, what was changed, an
 - Asked to add a Features section documenting Custom Working Hours and Printable Jobsite Weather Report as separate extras after required features are built and validated.
 - Added both feature descriptions, their origin, behavior, print content, browser print approach, and implementation order. Clarified that the initial version uses fixed 7:00 AM-5:00 PM hours and aligned related Inputs, Calculations, Outputs, and Look and Feel references.
 - Worked: successfully; no application code was written and no Git commit was created.
+
+## 2026-11-22
+- Asked to add the approved app overview and complete six-stage build plan to spec.md while preserving its sections and Features, and not to begin implementation.
+- Added the overview near the top and the six sequential build stages at the end, including build goals, checks, dependencies, required validation before extras, and single-file GitHub Pages constraints. Recorded this request.
+- Worked: successfully; documentation only; no application code or index.html was created, and no Git commit was made.
