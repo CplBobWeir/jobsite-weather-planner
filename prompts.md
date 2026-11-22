@@ -48,3 +48,8 @@ This file records the requests made to the AI coding agent, what was changed, an
 - Asked to add the approved app overview and complete six-stage build plan to spec.md while preserving its sections and Features, and not to begin implementation.
 - Added the overview near the top and the six sequential build stages at the end, including build goals, checks, dependencies, required validation before extras, and single-file GitHub Pages constraints. Recorded this request.
 - Worked: successfully; documentation only; no application code or index.html was created, and no Git commit was made.
+
+## 2026-11-22
+- Asked to build only Stage 1 as a responsive visual mockup in a single index.html file, with demonstration weather values and no APIs or real calculations.
+- Created the static dashboard mockup with collapsible threshold settings, jobsite map placeholder, seven-day sample rating cards, expandable sample details, loading/error previews, and a visible planning disclaimer.
+- Worked: successfully; the Stage 1 mockup was created without weather API connections or rating calculations. No later stage was built and no Git commit was created.
