@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#f4f6f7">
   <title>Jobsite Weather Planner</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
   <style>
     :root {
       color-scheme: light;
@@ -1055,6 +1056,217 @@
         transition-duration: .01ms !important;
       }
     }
+
+    .map-toolbar {
+      flex-wrap: wrap;
+    }
+
+    .map-toolbar-meta {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+      gap: 7px 14px;
+      color: var(--muted);
+      font-size: 11px;
+      text-align: right;
+    }
+
+    .map-toolbar-meta strong {
+      color: #43515d;
+      font-weight: 750;
+    }
+
+    #jobsite-map {
+      position: relative;
+      z-index: 0;
+      width: 100%;
+      height: 350px;
+      background: #e9eee9;
+      font-family: inherit;
+    }
+
+    #map-prompt {
+      z-index: 500;
+      pointer-events: none;
+    }
+
+    #map-prompt[hidden],
+    [hidden] {
+      display: none !important;
+    }
+
+    .map-error {
+      margin: 0;
+      padding: 9px 14px;
+      border-top: 1px solid #efc3bd;
+      background: var(--red-pale);
+      color: var(--red);
+      font-size: 12px;
+    }
+
+    .forecast-message {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      margin: 0 0 12px;
+      padding: 12px 14px;
+      border: 1px solid var(--line);
+      border-radius: 9px;
+      background: #fff;
+      color: #43515d;
+      font-size: 12px;
+    }
+
+    .forecast-message p {
+      margin: 1px 0 0;
+    }
+
+    .forecast-message[data-state="loading"] {
+      border-color: #edc7b1;
+      background: #fff8f3;
+      color: #74442e;
+    }
+
+    .forecast-message[data-state="error"] {
+      border-color: #efc3bd;
+      background: var(--red-pale);
+      color: #792e29;
+    }
+
+    .forecast-message[data-state="success"] {
+      border-color: #bfddc8;
+      background: #f0f8f2;
+      color: #315d40;
+    }
+
+    .message-icon {
+      display: grid;
+      width: 20px;
+      height: 20px;
+      flex: 0 0 auto;
+      place-items: center;
+      border-radius: 50%;
+      background: rgba(31, 44, 56, .08);
+      font-size: 12px;
+      font-weight: 850;
+    }
+
+    .message-spinner {
+      border: 2px solid #efc7b0;
+      border-top-color: var(--orange);
+      background: transparent;
+      animation: spin 850ms linear infinite;
+    }
+
+    .calendar-grid[data-loaded="false"] {
+      display: none;
+    }
+
+    .day-card {
+      min-height: 84px;
+    }
+
+    .day-card .day-label {
+      display: block;
+      width: 100%;
+      margin-top: 6px;
+      color: var(--muted);
+      font-size: 10px;
+    }
+
+    .day-card[aria-pressed="true"] {
+      background: #fffaf7;
+    }
+
+    .forecast-period {
+      display: block;
+      margin-top: 3px;
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 500;
+    }
+
+    .hourly-table-wrap {
+      overflow-x: auto;
+      overscroll-behavior-x: contain;
+      border-top: 1px solid #edf0f1;
+    }
+
+    .hourly-table {
+      width: 100%;
+      min-width: 670px;
+      border-collapse: collapse;
+      text-align: left;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .hourly-table th,
+    .hourly-table td {
+      padding: 10px 13px;
+      border-bottom: 1px solid #edf0f1;
+      white-space: nowrap;
+    }
+
+    .hourly-table th {
+      background: #f7f8f8;
+      color: #53616d;
+      font-size: 10px;
+      font-weight: 800;
+    }
+
+    .hourly-table td {
+      color: #34434f;
+      font-size: 12px;
+    }
+
+    .hourly-table tbody tr:last-child td {
+      border-bottom: 0;
+    }
+
+    .hourly-table .missing-value {
+      color: var(--red);
+      font-weight: 700;
+    }
+
+    .missing-warning {
+      margin: 0;
+      padding: 10px 14px;
+      border-top: 1px solid #edc7b1;
+      background: #fff8f3;
+      color: #74442e;
+      font-size: 11px;
+    }
+
+    .settings-validation {
+      margin: 8px 0 0;
+      color: var(--red);
+      font-size: 11px;
+    }
+
+    .settings-validation[hidden] {
+      display: none;
+    }
+
+    @media (max-width: 620px) {
+      #jobsite-map {
+        height: 300px;
+      }
+
+      .map-toolbar-meta {
+        justify-content: flex-start;
+        text-align: left;
+      }
+
+      .map-callout {
+        right: 9px;
+        bottom: 9px;
+        left: 9px;
+      }
+
+      .map-callout p {
+        max-width: 230px;
+      }
+    }
   </style>
 </head>
 <body>
@@ -1068,8 +1280,8 @@
         </p>
       </div>
       <div class="topbar-meta">
-        <span>CCE 270 · STAGE 1</span>
-        <span class="demo-tag">Visual mockup</span>
+        <span>CCE 270 · STAGE 2</span>
+        <span class="demo-tag">Hourly forecast</span>
       </div>
     </header>
 
@@ -1077,12 +1289,12 @@
       <section class="hero" aria-labelledby="page-title">
         <p class="eyebrow">Construction weather planning</p>
         <h1 id="page-title">Plan the workday with confidence.</h1>
-        <p class="hero-copy">A seven-day view of weather conditions for crane lifts, concrete pours, and roofing at your jobsite.</p>
+        <p class="hero-copy">Select a jobsite to view seven days of local hourly weather for construction planning.</p>
       </section>
 
-      <aside class="demo-notice" aria-label="Demonstration data notice">
+      <aside class="demo-notice" aria-label="Stage 2 feature notice">
         <span class="demo-notice-icon" aria-hidden="true">!</span>
-        <div><strong>Demonstration data only.</strong> Sample ratings and weather values are for layout review; this mockup does not load a forecast or calculate activity ratings.</div>
+        <div><strong>Forecast data only.</strong> Weather values will be shown without GO, CAUTION, or NO-GO ratings in this stage. Activity ratings are a later stage.</div>
       </aside>
 
       <details class="settings-panel" open>
@@ -1091,7 +1303,7 @@
             <span class="settings-icon" aria-hidden="true">&#9881;</span>
             <span>
               <span class="settings-title">Planning thresholds</span>
-              <span class="settings-caption">Default values · controls shown for visual review only</span>
+              <span class="settings-caption">Adjust planning thresholds · no activity ratings in this stage</span>
             </span>
           </span>
           <span class="settings-chevron" aria-hidden="true">&#9660;</span>
@@ -1099,23 +1311,24 @@
         <div class="settings-content">
           <div class="settings-grid">
             <div class="setting-field">
-              <label for="crane-limit">Crane wind limit</label>
-              <input id="crane-limit" type="number" value="30" min="10" max="60" disabled aria-describedby="settings-help">
+              <label for="crane-limit">Crane wind limit (mph)</label>
+              <input id="crane-limit" type="number" value="30" min="10" max="60" step="1" inputmode="numeric" required aria-describedby="settings-help">
             </div>
             <div class="setting-field">
-              <label for="concrete-min">Concrete minimum temperature</label>
-              <input id="concrete-min" type="number" value="40" min="20" max="60" disabled aria-describedby="settings-help">
+              <label for="concrete-min">Concrete minimum temperature (&deg;F)</label>
+              <input id="concrete-min" type="number" value="40" min="20" max="60" step="1" inputmode="numeric" required aria-describedby="settings-help">
             </div>
             <div class="setting-field">
-              <label for="roofing-threshold">Roofing precipitation threshold</label>
-              <input id="roofing-threshold" type="number" value="30" min="0" max="100" disabled aria-describedby="settings-help">
+              <label for="roofing-threshold">Roofing precipitation threshold (%)</label>
+              <input id="roofing-threshold" type="number" value="30" min="0" max="100" step="1" inputmode="numeric" required aria-describedby="settings-help">
             </div>
             <div class="setting-field">
               <label for="working-hours">Working hours · jobsite local time</label>
               <input id="working-hours" type="text" value="7:00 AM - 5:00 PM" disabled aria-describedby="settings-help">
             </div>
           </div>
-          <p class="setting-help" id="settings-help">Mockup values only: crane limit in mph, concrete minimum in &deg;F, roofing threshold in %, and fixed initial working hours.</p>
+          <p class="setting-help" id="settings-help">Working hours are fixed at 7:00 AM-5:00 PM. Thresholds are adjustable and will be used by a later stage; changing them does not calculate ratings yet.</p>
+          <p class="settings-validation" id="settings-validation" role="alert" hidden></p>
         </div>
       </details>
 
@@ -1128,32 +1341,30 @@
               <p class="section-subtitle">Choose a point on the map to view your local forecast.</p>
             </div>
           </div>
-          <span class="location-state"><span class="location-dot" aria-hidden="true"></span>No location selected</span>
+          <span class="location-state" id="location-state" aria-live="polite"><span class="location-dot" aria-hidden="true"></span><span id="location-state-text">No location selected</span></span>
         </div>
 
         <div class="panel map-panel">
           <div class="map-toolbar">
-            <span class="map-toolbar-label">Jobsite location</span>
-            <span class="map-toolbar-label">Map preview</span>
+            <span class="map-toolbar-label">Click the map to set the jobsite</span>
+            <span class="map-toolbar-meta">
+              <span><strong>Coordinates:</strong> <span id="location-coordinates">Not selected</span></span>
+              <span><strong>Timezone:</strong> <span id="location-timezone">Not selected</span></span>
+            </span>
           </div>
-          <div class="map-placeholder" role="img" aria-label="Illustrative map placeholder; map selection is not available in this mockup.">
-            <span class="map-park map-park--one" aria-hidden="true"></span>
-            <span class="map-park map-park--two" aria-hidden="true"></span>
-            <span class="map-label map-label--one" aria-hidden="true">Park</span>
-            <span class="map-label map-label--two" aria-hidden="true">Local road</span>
-            <span class="map-pin-preview" aria-hidden="true"><span>+</span></span>
-            <div class="map-callout">
+          <div id="jobsite-map" aria-label="Interactive map; click to select a jobsite location.">
+            <div class="map-callout" id="map-prompt">
               <div class="map-callout-copy">
                 <span class="map-callout-mark" aria-hidden="true">&#9679;</span>
                 <div>
                   <strong>Choose your jobsite</strong>
-                  <p>The interactive map will be connected in a later stage.</p>
+                  <p>Click a point on the map to load a seven-day forecast.</p>
                 </div>
               </div>
-              <button class="map-action" type="button" disabled>Map selection coming later</button>
             </div>
           </div>
-          <p class="map-footnote">No coordinates or forecast are loaded in this Stage 1 mockup.</p>
+          <p class="map-error" id="map-error" role="alert" hidden></p>
+          <p class="map-footnote">Map tiles &copy; OpenStreetMap contributors. Forecasts are provided by Open-Meteo.</p>
         </div>
       </section>
 
@@ -1162,124 +1373,47 @@
           <div class="section-heading-main">
             <span class="section-number" aria-hidden="true">2</span>
             <div>
-              <h2 class="section-title" id="calendar-title">Seven-day outlook</h2>
-              <p class="section-subtitle">Review sample activity conditions across the seven-day outlook.</p>
+              <h2 class="section-title" id="calendar-title">Seven-day hourly forecast</h2>
+              <p class="section-subtitle">Select a day to inspect weather during fixed working hours.</p>
             </div>
           </div>
-          <span class="data-label">Demonstration data · not a forecast</span>
+          <span class="data-label">Open-Meteo · 7 days</span>
         </div>
 
-        <div class="calendar-grid" role="group" aria-label="Seven-day demonstration calendar. Select a day to expand sample details.">
-          <button class="day-card" type="button" data-day="0" aria-controls="day-details" aria-pressed="false">
-            <span class="day-heading"><span class="day-name">Day 1</span><span class="day-label">Sample</span></span>
-            <span class="activity-list">
-              <span class="activity-item"><span class="activity-name">Crane lift</span><span class="rating rating--go"><span class="rating-icon" aria-hidden="true">&#10003;</span>GO</span></span>
-              <span class="activity-item"><span class="activity-name">Concrete pour</span><span class="rating rating--go"><span class="rating-icon" aria-hidden="true">&#10003;</span>GO</span></span>
-              <span class="activity-item"><span class="activity-name">Roofing</span><span class="rating rating--caution"><span class="rating-icon" aria-hidden="true">!</span>CAUTION</span></span>
-            </span>
-          </button>
-          <button class="day-card" type="button" data-day="1" aria-controls="day-details" aria-pressed="true">
-            <span class="day-heading"><span class="day-name">Day 2</span><span class="day-label">Sample</span></span>
-            <span class="activity-list">
-              <span class="activity-item"><span class="activity-name">Crane lift</span><span class="rating rating--caution"><span class="rating-icon" aria-hidden="true">!</span>CAUTION</span></span>
-              <span class="activity-item"><span class="activity-name">Concrete pour</span><span class="rating rating--go"><span class="rating-icon" aria-hidden="true">&#10003;</span>GO</span></span>
-              <span class="activity-item"><span class="activity-name">Roofing</span><span class="rating rating--no-go"><span class="rating-icon" aria-hidden="true">&#10005;</span>NO-GO</span></span>
-            </span>
-          </button>
-          <button class="day-card" type="button" data-day="2" aria-controls="day-details" aria-pressed="false">
-            <span class="day-heading"><span class="day-name">Day 3</span><span class="day-label">Sample</span></span>
-            <span class="activity-list">
-              <span class="activity-item"><span class="activity-name">Crane lift</span><span class="rating rating--no-go"><span class="rating-icon" aria-hidden="true">&#10005;</span>NO-GO</span></span>
-              <span class="activity-item"><span class="activity-name">Concrete pour</span><span class="rating rating--caution"><span class="rating-icon" aria-hidden="true">!</span>CAUTION</span></span>
-              <span class="activity-item"><span class="activity-name">Roofing</span><span class="rating rating--go"><span class="rating-icon" aria-hidden="true">&#10003;</span>GO</span></span>
-            </span>
-          </button>
-          <button class="day-card" type="button" data-day="3" aria-controls="day-details" aria-pressed="false">
-            <span class="day-heading"><span class="day-name">Day 4</span><span class="day-label">Sample</span></span>
-            <span class="activity-list">
-              <span class="activity-item"><span class="activity-name">Crane lift</span><span class="rating rating--go"><span class="rating-icon" aria-hidden="true">&#10003;</span>GO</span></span>
-              <span class="activity-item"><span class="activity-name">Concrete pour</span><span class="rating rating--no-go"><span class="rating-icon" aria-hidden="true">&#10005;</span>NO-GO</span></span>
-              <span class="activity-item"><span class="activity-name">Roofing</span><span class="rating rating--go"><span class="rating-icon" aria-hidden="true">&#10003;</span>GO</span></span>
-            </span>
-          </button>
-          <button class="day-card" type="button" data-day="4" aria-controls="day-details" aria-pressed="false">
-            <span class="day-heading"><span class="day-name">Day 5</span><span class="day-label">Sample</span></span>
-            <span class="activity-list">
-              <span class="activity-item"><span class="activity-name">Crane lift</span><span class="rating rating--caution"><span class="rating-icon" aria-hidden="true">!</span>CAUTION</span></span>
-              <span class="activity-item"><span class="activity-name">Concrete pour</span><span class="rating rating--caution"><span class="rating-icon" aria-hidden="true">!</span>CAUTION</span></span>
-              <span class="activity-item"><span class="activity-name">Roofing</span><span class="rating rating--go"><span class="rating-icon" aria-hidden="true">&#10003;</span>GO</span></span>
-            </span>
-          </button>
-          <button class="day-card" type="button" data-day="5" aria-controls="day-details" aria-pressed="false">
-            <span class="day-heading"><span class="day-name">Day 6</span><span class="day-label">Sample</span></span>
-            <span class="activity-list">
-              <span class="activity-item"><span class="activity-name">Crane lift</span><span class="rating rating--go"><span class="rating-icon" aria-hidden="true">&#10003;</span>GO</span></span>
-              <span class="activity-item"><span class="activity-name">Concrete pour</span><span class="rating rating--go"><span class="rating-icon" aria-hidden="true">&#10003;</span>GO</span></span>
-              <span class="activity-item"><span class="activity-name">Roofing</span><span class="rating rating--no-go"><span class="rating-icon" aria-hidden="true">&#10005;</span>NO-GO</span></span>
-            </span>
-          </button>
-          <button class="day-card" type="button" data-day="6" aria-controls="day-details" aria-pressed="false">
-            <span class="day-heading"><span class="day-name">Day 7</span><span class="day-label">Sample</span></span>
-            <span class="activity-list">
-              <span class="activity-item"><span class="activity-name">Crane lift</span><span class="rating rating--caution"><span class="rating-icon" aria-hidden="true">!</span>CAUTION</span></span>
-              <span class="activity-item"><span class="activity-name">Concrete pour</span><span class="rating rating--go"><span class="rating-icon" aria-hidden="true">&#10003;</span>GO</span></span>
-              <span class="activity-item"><span class="activity-name">Roofing</span><span class="rating rating--caution"><span class="rating-icon" aria-hidden="true">!</span>CAUTION</span></span>
-            </span>
-          </button>
+        <div class="forecast-message" id="forecast-status" data-state="info" role="status" aria-live="polite">
+          <span class="message-icon" id="forecast-status-icon" aria-hidden="true">i</span>
+          <p id="forecast-status-text">Select a point on the map to load a seven-day forecast. No activity ratings are calculated in Stage 2.</p>
         </div>
-        <p class="selection-hint">Select a day card to expand its demonstration weather details. All statuses above are samples.</p>
 
-        <section class="panel detail-panel" id="day-details" aria-labelledby="detail-heading">
+        <div class="calendar-grid" id="calendar-grid" data-loaded="false" role="group" aria-label="Seven-day forecast days"></div>
+        <p class="selection-hint" id="calendar-hint">Hourly readings for 7:00 AM-4:00 PM local time will appear in the selected-day details.</p>
+
+        <section class="panel detail-panel" id="day-details" aria-labelledby="detail-heading" hidden>
           <div class="detail-head">
             <div>
               <div class="detail-title">
-                <h3 id="detail-heading">Day 2 · Sample day details</h3>
-                <span class="sample-stamp">Demo values</span>
+                <h3 id="detail-heading">Hourly weather details</h3>
+                <span class="sample-stamp" id="detail-timezone">Jobsite local time</span>
               </div>
-              <p class="detail-intro">Illustrative working hours: 7:00 AM-5:00 PM local time</p>
+              <p class="detail-intro" id="detail-intro">Raw forecast values only; activity ratings will be added in Stage 3.</p>
             </div>
           </div>
-          <div class="detail-body">
-            <article class="detail-row">
-              <span class="detail-activity">Crane lift</span>
-              <div class="detail-value"><span class="rating rating--caution" data-detail-rating="crane"><span class="rating-icon" aria-hidden="true">!</span><span class="rating-label">CAUTION</span></span></div>
-              <p class="detail-reading" id="crane-reading">Wind 22 mph · gust 28 mph</p>
-              <p class="detail-risk-time" id="crane-risk">Highest-risk hour: 10:00 AM</p>
-              <p class="detail-explanation" id="crane-reason">Demonstration: sample gust is in the caution band.</p>
-            </article>
-            <article class="detail-row">
-              <span class="detail-activity">Concrete pour</span>
-              <div class="detail-value"><span class="rating rating--go" data-detail-rating="concrete"><span class="rating-icon" aria-hidden="true">&#10003;</span><span class="rating-label">GO</span></span></div>
-              <p class="detail-reading" id="concrete-reading">Temperature 48 &deg;F</p>
-              <p class="detail-risk-time" id="concrete-risk">Highest-risk hour: 8:00 AM</p>
-              <p class="detail-explanation" id="concrete-reason">Demonstration: sample temperature is above the caution band.</p>
-            </article>
-            <article class="detail-row">
-              <span class="detail-activity">Roofing</span>
-              <div class="detail-value"><span class="rating rating--no-go" data-detail-rating="roofing"><span class="rating-icon" aria-hidden="true">&#10005;</span><span class="rating-label">NO-GO</span></span></div>
-              <p class="detail-reading" id="roofing-reading">Precipitation probability 42%</p>
-              <p class="detail-risk-time" id="roofing-risk">Highest-risk hour: 2:00 PM</p>
-              <p class="detail-explanation" id="roofing-reason">Demonstration: sample probability is above the sample threshold.</p>
-            </article>
+          <p class="missing-warning" id="missing-warning" role="status" hidden></p>
+          <div class="hourly-table-wrap" role="region" aria-label="Hourly forecast values" tabindex="0">
+            <table class="hourly-table">
+              <thead>
+                <tr>
+                  <th scope="col">Local time</th>
+                  <th scope="col">Temperature (&deg;F)</th>
+                  <th scope="col">Wind speed (mph)</th>
+                  <th scope="col">Wind gust (mph)</th>
+                  <th scope="col">Precipitation probability (%)</th>
+                </tr>
+              </thead>
+              <tbody id="hourly-body"></tbody>
+            </table>
           </div>
         </section>
-      </section>
-
-      <section class="state-section" aria-labelledby="states-title">
-        <div class="state-section-heading">
-          <h2 id="states-title">Loading and error message previews</h2>
-          <span>Example interface states · not active requests</span>
-        </div>
-        <div class="state-grid">
-          <div class="state-card" role="status">
-            <div class="state-title"><span class="spinner" aria-hidden="true"></span>Loading example</div>
-            <p class="state-copy">Loading forecast for the selected jobsite&hellip;</p>
-          </div>
-          <div class="state-card state-error" role="note">
-            <div class="state-title"><span class="state-error-icon" aria-hidden="true">!</span>Error example</div>
-            <p class="state-copy">Forecast unavailable. Please try again after selecting a jobsite.</p>
-          </div>
-        </div>
       </section>
 
       <aside class="disclaimer" aria-label="Planning guidance disclaimer">
@@ -1288,100 +1422,381 @@
       </aside>
     </main>
 
-    <p class="footer-note">Stage 1 visual mockup · No weather service, live location, or rating calculations are connected.</p>
+    <p class="footer-note">Stage 2 · Open-Meteo hourly weather data · No activity ratings are calculated yet.</p>
   </div>
 
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script>
-    const sampleDetails = [
-      {
-        day: "Day 1",
-        crane: ["Wind 18 mph · gust 24 mph", "Highest-risk hour: 11:00 AM", "Demonstration: sample wind values are below the caution threshold."],
-        concrete: ["Temperature 52 °F", "Highest-risk hour: 7:00 AM", "Demonstration: sample temperature is above the caution band."],
-        roofing: ["Precipitation probability 18%", "Highest-risk hour: 3:00 PM", "Demonstration: sample probability is within the caution band."]
-      },
-      {
-        day: "Day 2",
-        crane: ["Wind 22 mph · gust 28 mph", "Highest-risk hour: 10:00 AM", "Demonstration: sample gust is in the caution band."],
-        concrete: ["Temperature 48 °F", "Highest-risk hour: 8:00 AM", "Demonstration: sample temperature is above the caution band."],
-        roofing: ["Precipitation probability 42%", "Highest-risk hour: 2:00 PM", "Demonstration: sample probability is above the sample threshold."]
-      },
-      {
-        day: "Day 3",
-        crane: ["Wind 31 mph · gust 35 mph", "Highest-risk hour: 1:00 PM", "Demonstration: sample wind exceeds the sample crane limit."],
-        concrete: ["Temperature 43 °F", "Highest-risk hour: 7:00 AM", "Demonstration: sample temperature is in the caution band."],
-        roofing: ["Precipitation probability 8%", "Highest-risk hour: 4:00 PM", "Demonstration: sample probability is below the caution boundary."]
-      },
-      {
-        day: "Day 4",
-        crane: ["Wind 19 mph · gust 25 mph", "Highest-risk hour: 9:00 AM", "Demonstration: sample wind values are below the caution threshold."],
-        concrete: ["Temperature 37 °F", "Highest-risk hour: 7:00 AM", "Demonstration: sample temperature is below the sample minimum."],
-        roofing: ["Precipitation probability 10%", "Highest-risk hour: 12:00 PM", "Demonstration: sample probability is below the caution boundary."]
-      },
-      {
-        day: "Day 5",
-        crane: ["Wind 27 mph · gust 28 mph", "Highest-risk hour: 12:00 PM", "Demonstration: sample gust is in the caution band."],
-        concrete: ["Temperature 41 °F", "Highest-risk hour: 7:00 AM", "Demonstration: sample temperature is in the caution band."],
-        roofing: ["Precipitation probability 12%", "Highest-risk hour: 2:00 PM", "Demonstration: sample probability is below the caution boundary."]
-      },
-      {
-        day: "Day 6",
-        crane: ["Wind 17 mph · gust 23 mph", "Highest-risk hour: 10:00 AM", "Demonstration: sample wind values are below the caution threshold."],
-        concrete: ["Temperature 55 °F", "Highest-risk hour: 8:00 AM", "Demonstration: sample temperature is above the caution band."],
-        roofing: ["Precipitation probability 38%", "Highest-risk hour: 1:00 PM", "Demonstration: sample probability is above the sample threshold."]
-      },
-      {
-        day: "Day 7",
-        crane: ["Wind 26 mph · gust 29 mph", "Highest-risk hour: 3:00 PM", "Demonstration: sample gust is in the caution band."],
-        concrete: ["Temperature 47 °F", "Highest-risk hour: 7:00 AM", "Demonstration: sample temperature is above the caution band."],
-        roofing: ["Precipitation probability 22%", "Highest-risk hour: 4:00 PM", "Demonstration: sample probability is in the caution band."]
-      }
+    const forecastStatus = document.querySelector("#forecast-status");
+    const forecastStatusIcon = document.querySelector("#forecast-status-icon");
+    const forecastStatusText = document.querySelector("#forecast-status-text");
+    const calendarGrid = document.querySelector("#calendar-grid");
+    const dayDetails = document.querySelector("#day-details");
+    const hourlyBody = document.querySelector("#hourly-body");
+    const missingWarning = document.querySelector("#missing-warning");
+    const mapError = document.querySelector("#map-error");
+    const mapPrompt = document.querySelector("#map-prompt");
+    const locationStateText = document.querySelector("#location-state-text");
+    const locationCoordinates = document.querySelector("#location-coordinates");
+    const locationTimezone = document.querySelector("#location-timezone");
+    const settingsValidation = document.querySelector("#settings-validation");
+    const thresholdFields = [
+      { input: document.querySelector("#crane-limit"), min: 10, max: 60, unit: "mph" },
+      { input: document.querySelector("#concrete-min"), min: 20, max: 60, unit: "°F" },
+      { input: document.querySelector("#roofing-threshold"), min: 0, max: 100, unit: "%" }
     ];
 
-    const dayCards = Array.from(document.querySelectorAll(".day-card"));
-    const detailsPanel = document.querySelector("#day-details");
-    const detailsHeading = document.querySelector("#detail-heading");
+    let map;
+    let jobsiteMarker;
+    let currentRequest = 0;
+    let activeController;
+    let jobsiteTimeZone = "";
+    let forecastDays = [];
 
-    function showSampleDetails(index) {
-      const sample = sampleDetails[index];
-      const sourceRatings = dayCards[index].querySelectorAll(".rating");
-      detailsHeading.textContent = `${sample.day} · Sample day details`;
+    function setForecastMessage(state, message) {
+      forecastStatus.dataset.state = state;
+      forecastStatusText.textContent = message;
+      forecastStatusIcon.className = "message-icon";
 
-      const ratingDisplay = {
-        "rating--go": ["✓", "GO"],
-        "rating--caution": ["!", "CAUTION"],
-        "rating--no-go": ["×", "NO-GO"]
-      };
-
-      ["crane", "concrete", "roofing"].forEach((activity, activityIndex) => {
-        document.querySelector(`#${activity}-reading`).textContent = sample[activity][0];
-        document.querySelector(`#${activity}-risk`).textContent = sample[activity][1];
-        document.querySelector(`#${activity}-reason`).textContent = sample[activity][2];
-
-        const statusClass = Object.keys(ratingDisplay).find((className) => sourceRatings[activityIndex].classList.contains(className));
-        const detailRating = document.querySelector(`[data-detail-rating="${activity}"]`);
-        const [icon, label] = ratingDisplay[statusClass];
-        detailRating.className = `rating ${statusClass}`;
-        detailRating.querySelector(".rating-icon").textContent = icon;
-        detailRating.querySelector(".rating-label").textContent = label;
-      });
-
-      detailsPanel.hidden = false;
+      if (state === "loading") {
+        forecastStatusIcon.classList.add("message-spinner");
+        forecastStatusIcon.textContent = "";
+      } else {
+        forecastStatusIcon.textContent = state === "error" ? "!" : state === "success" ? "✓" : "i";
+      }
     }
 
-    dayCards.forEach((card, index) => {
-      card.addEventListener("click", () => {
-        const wasSelected = card.getAttribute("aria-pressed") === "true";
-        dayCards.forEach((dayCard) => dayCard.setAttribute("aria-pressed", "false"));
+    function setMapError(message) {
+      mapError.textContent = message;
+      mapError.hidden = !message;
+    }
 
-        if (wasSelected) {
-          detailsPanel.hidden = true;
+    function valueAt(values, index) {
+      if (!Array.isArray(values) || index >= values.length) {
+        return null;
+      }
+
+      const value = values[index];
+      return typeof value === "number" && Number.isFinite(value) ? value : null;
+    }
+
+    function formatLocalDate(dateString) {
+      const [year, month, day] = dateString.split("-").map(Number);
+      const utcDate = new Date(Date.UTC(year, month - 1, day, 12));
+      return new Intl.DateTimeFormat("en-US", {
+        weekday: "short",
+        month: "short",
+        day: "numeric",
+        timeZone: "UTC"
+      }).format(utcDate);
+    }
+
+    function getNextSevenLocalDates(timeZone) {
+      const parts = new Intl.DateTimeFormat("en-US", {
+        timeZone,
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit"
+      }).formatToParts(new Date());
+      const year = Number(parts.find((part) => part.type === "year").value);
+      const month = Number(parts.find((part) => part.type === "month").value);
+      const day = Number(parts.find((part) => part.type === "day").value);
+      const firstDate = Date.UTC(year, month - 1, day);
+
+      return Array.from({ length: 7 }, (_, index) => {
+        return new Date(firstDate + index * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
+      });
+    }
+
+    function collectForecastDays(payload, timeZone) {
+      const hourly = payload && payload.hourly;
+      const times = hourly && hourly.time;
+
+      if (!Array.isArray(times) || times.length === 0) {
+        throw new Error("The forecast response did not contain hourly timestamps.");
+      }
+
+      const groups = new Map();
+      times.forEach((time, index) => {
+        if (typeof time !== "string" || !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(time)) {
+          throw new Error("The forecast response contained an invalid local timestamp.");
+        }
+
+        const hour = Number(time.slice(11, 13));
+        const date = time.slice(0, 10);
+        if (!groups.has(date)) {
+          groups.set(date, { date, hours: [] });
+        }
+
+        if (hour < 7 || hour >= 17) {
           return;
         }
 
-        card.setAttribute("aria-pressed", "true");
-        showSampleDetails(index);
+        groups.get(date).hours.push({
+          time: time.slice(11, 16),
+          temperature: valueAt(hourly.temperature_2m, index),
+          wind: valueAt(hourly.wind_speed_10m, index),
+          gust: valueAt(hourly.wind_gusts_10m, index),
+          precipitation: valueAt(hourly.precipitation_probability, index)
+        });
       });
-    });
+
+      if (groups.size === 0) {
+        throw new Error("No hourly forecast data was available during the fixed 7:00 AM-5:00 PM workday.");
+      }
+
+      return getNextSevenLocalDates(timeZone).map((date) => {
+        const group = groups.get(date);
+        return { date, hours: group ? group.hours : [] };
+      });
+    }
+
+    function createDayCard(day, index) {
+      const card = document.createElement("button");
+      card.className = "day-card";
+      card.type = "button";
+      card.setAttribute("aria-controls", "day-details");
+      card.setAttribute("aria-pressed", "false");
+      card.setAttribute("aria-label", `Show hourly weather for ${formatLocalDate(day.date)}`);
+
+      const heading = document.createElement("span");
+      heading.className = "day-heading";
+
+      const name = document.createElement("span");
+      name.className = "day-name";
+      name.textContent = formatLocalDate(day.date);
+
+      const dayNumber = document.createElement("span");
+      dayNumber.className = "day-label";
+      dayNumber.textContent = `Day ${index + 1} · ${day.hours.length} work-hour records`;
+
+      heading.append(name);
+      card.append(heading, dayNumber);
+      card.addEventListener("click", () => selectForecastDay(index));
+      return card;
+    }
+
+    function formatWeatherValue(value, unit, decimals) {
+      if (value === null) {
+        return "Missing";
+      }
+
+      const formatted = decimals === 0 ? String(Math.round(value)) : value.toFixed(decimals);
+      return `${formatted} ${unit}`;
+    }
+
+    function appendCell(row, value) {
+      const cell = document.createElement("td");
+      cell.textContent = value;
+      if (value === "Missing") {
+        cell.className = "missing-value";
+      }
+      row.append(cell);
+    }
+
+    function selectForecastDay(index) {
+      const day = forecastDays[index];
+      if (!day) {
+        return;
+      }
+
+      calendarGrid.querySelectorAll(".day-card").forEach((card, cardIndex) => {
+        card.setAttribute("aria-pressed", String(cardIndex === index));
+      });
+
+      document.querySelector("#detail-heading").textContent = formatLocalDate(day.date);
+      document.querySelector("#detail-timezone").textContent = jobsiteTimeZone;
+      document.querySelector("#detail-intro").textContent = `Hourly forecast from 7:00 AM through 4:00 PM · jobsite local time (${jobsiteTimeZone}). No activity ratings are calculated in Stage 2.`;
+
+      hourlyBody.replaceChildren();
+      let missingValues = 0;
+      const expectedHours = 10;
+      const requiredValues = expectedHours * 4;
+
+      if (day.hours.length === 0) {
+        const row = document.createElement("tr");
+        const cell = document.createElement("td");
+        cell.colSpan = 5;
+        cell.textContent = "No hourly forecast records are available in the fixed working-hours window for this date.";
+        row.append(cell);
+        hourlyBody.append(row);
+      } else {
+        day.hours.forEach((hour) => {
+          const row = document.createElement("tr");
+          appendCell(row, hour.time);
+          const values = [
+            formatWeatherValue(hour.temperature, "°F", 1),
+            formatWeatherValue(hour.wind, "mph", 1),
+            formatWeatherValue(hour.gust, "mph", 1),
+            formatWeatherValue(hour.precipitation, "%", 0)
+          ];
+          values.forEach((value) => {
+            if (value === "Missing") {
+              missingValues += 1;
+            }
+            appendCell(row, value);
+          });
+          hourlyBody.append(row);
+        });
+      }
+
+      const missingHours = Math.max(0, expectedHours - day.hours.length);
+      const unavailableValues = missingValues + missingHours * 4;
+      const hasMissingData = missingHours > 0 || missingValues > 0;
+      missingWarning.hidden = !hasMissingData;
+      missingWarning.textContent = `Missing hourly data: ${missingHours} of ${expectedHours} working-hour timestamps and ${unavailableValues} of ${requiredValues} weather values are unavailable. Missing values are shown explicitly; no values are substituted.`;
+      dayDetails.hidden = false;
+    }
+
+    function renderForecast(payload) {
+      const timezone = payload.timezone;
+      if (typeof timezone !== "string" || timezone.length === 0) {
+        throw new Error("The forecast response did not include the jobsite's local timezone.");
+      }
+
+      jobsiteTimeZone = timezone;
+      locationTimezone.textContent = timezone;
+      forecastDays = collectForecastDays(payload, timezone);
+      calendarGrid.replaceChildren();
+      forecastDays.forEach((day, index) => calendarGrid.append(createDayCard(day, index)));
+      calendarGrid.dataset.loaded = "true";
+      document.querySelector("#calendar-hint").textContent = `Select a date to view raw hourly values for 7:00 AM-4:00 PM in ${timezone}. Thresholds are adjustable, but ratings are not calculated in Stage 2.`;
+      selectForecastDay(0);
+
+      if (forecastDays.length < 7) {
+        setForecastMessage("error", `Open-Meteo returned ${forecastDays.length} forecast day(s), rather than the requested seven. Select a location again to retry.`);
+        return;
+      }
+
+      setForecastMessage("success", `Seven-day hourly forecast loaded for ${timezone}. Select any day to inspect the weather values.`);
+    }
+
+    async function loadForecast(latitude, longitude, requestId, signal) {
+      const url = new URL("https://api.open-meteo.com/v1/forecast");
+      url.searchParams.set("latitude", latitude.toFixed(5));
+      url.searchParams.set("longitude", longitude.toFixed(5));
+      url.searchParams.set("hourly", "temperature_2m,wind_speed_10m,wind_gusts_10m,precipitation_probability");
+      url.searchParams.set("temperature_unit", "fahrenheit");
+      url.searchParams.set("wind_speed_unit", "mph");
+      url.searchParams.set("timezone", "auto");
+      url.searchParams.set("forecast_days", "7");
+
+      const response = await fetch(url.toString(), { signal });
+      let payload;
+      try {
+        payload = await response.json();
+      } catch {
+        throw new Error(`Open-Meteo returned unreadable data (HTTP ${response.status}).`);
+      }
+
+      if (!response.ok) {
+        throw new Error(payload && payload.reason ? payload.reason : `Open-Meteo returned HTTP ${response.status}.`);
+      }
+      if (payload && payload.error) {
+        throw new Error(payload.reason || "Open-Meteo could not provide a forecast for this location.");
+      }
+      if (requestId !== currentRequest) {
+        return;
+      }
+
+      renderForecast(payload);
+    }
+
+    function chooseJobsite(latitude, longitude) {
+      currentRequest += 1;
+      const requestId = currentRequest;
+      if (activeController) {
+        activeController.abort();
+      }
+      activeController = new AbortController();
+      const controller = activeController;
+
+      locationCoordinates.textContent = `${latitude.toFixed(5)}, ${longitude.toFixed(5)}`;
+      locationTimezone.textContent = "Looking up...";
+      locationStateText.textContent = "Loading forecast";
+      mapPrompt.hidden = true;
+      setMapError("");
+      setForecastMessage("loading", "Loading seven days of hourly weather for the selected jobsite...");
+      calendarGrid.replaceChildren();
+      calendarGrid.dataset.loaded = "false";
+      forecastDays = [];
+      dayDetails.hidden = true;
+      missingWarning.hidden = true;
+
+      if (jobsiteMarker) {
+        jobsiteMarker.setLatLng([latitude, longitude]);
+      } else {
+        jobsiteMarker = L.circleMarker([latitude, longitude], {
+          radius: 8,
+          color: "#ffffff",
+          weight: 3,
+          fillColor: "#d86c32",
+          fillOpacity: 1
+        }).addTo(map);
+      }
+
+      loadForecast(latitude, longitude, requestId, controller.signal)
+        .then(() => {
+          if (requestId === currentRequest) {
+            locationStateText.textContent = "Jobsite selected";
+          }
+        })
+        .catch((error) => {
+          if (error.name === "AbortError" || requestId !== currentRequest) {
+            return;
+          }
+
+          forecastDays = [];
+          calendarGrid.replaceChildren();
+          calendarGrid.dataset.loaded = "false";
+          dayDetails.hidden = true;
+          locationStateText.textContent = "Forecast unavailable";
+          locationTimezone.textContent = "Unavailable";
+          const message = error instanceof TypeError
+            ? "Unable to reach Open-Meteo. Check your internet connection and select a location to retry."
+            : `Forecast unavailable: ${error.message}`;
+          setForecastMessage("error", message);
+        });
+    }
+
+    function validateThresholds() {
+      const invalid = thresholdFields.filter(({ input }) => !input.checkValidity());
+      if (invalid.length === 0) {
+        settingsValidation.hidden = true;
+        settingsValidation.textContent = "";
+        return;
+      }
+
+      settingsValidation.textContent = invalid.map(({ input, min, max, unit }) => {
+        return `${input.labels[0].textContent} must be between ${min} and ${max} ${unit}.`;
+      }).join(" ");
+      settingsValidation.hidden = false;
+    }
+
+    thresholdFields.forEach(({ input }) => input.addEventListener("input", validateThresholds));
+
+    if (typeof L === "undefined") {
+      setMapError("The interactive map library could not be loaded. Check your connection and reload the page.");
+      setForecastMessage("error", "Map unavailable. The jobsite location cannot be selected until the map loads.");
+      locationStateText.textContent = "Map unavailable";
+    } else {
+      try {
+        map = L.map("jobsite-map", { scrollWheelZoom: false }).setView([39.5, -98.35], 4);
+        L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+          maxZoom: 19,
+          attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap contributors</a>'
+        }).addTo(map);
+        map.on("click", (event) => chooseJobsite(event.latlng.lat, event.latlng.lng));
+        map.on("tileerror", () => {
+          setMapError("Some map tiles could not be loaded. Check your connection; you can still try selecting a location.");
+        });
+        window.addEventListener("resize", () => map.invalidateSize());
+      } catch (error) {
+        setMapError(`The interactive map could not be initialized: ${error.message}`);
+        setForecastMessage("error", "Map unavailable. The jobsite location cannot be selected until the map loads.");
+        locationStateText.textContent = "Map unavailable";
+      }
+    }
   </script>
 </body>
 </html>
