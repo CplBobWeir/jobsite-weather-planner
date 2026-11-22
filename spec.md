@@ -2,7 +2,7 @@
 # Jobsite Weather Planner
 
 ## Purpose
-Create a web app that helps construction managers plan work based on the weather. The app will show which days are good for crane lifts, concrete pours, and roofing.
+Create a responsive web dashboard that helps construction managers compare crane lifts, concrete pours, and roofing work across the next seven days at a selected jobsite. The app will display simple weather-based GO, CAUTION, and NO-GO ratings with short explanations, supporting preliminary scheduling decisions rather than guaranteeing that conditions are safe.
 
 ## Inputs
 - Jobsite location: selected by clicking a map.
