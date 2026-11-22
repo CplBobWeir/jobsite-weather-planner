@@ -685,6 +685,11 @@
       color: var(--red);
     }
 
+    .rating--unavailable {
+      background: #eef1f3;
+      color: #53616d;
+    }
+
     .selection-hint {
       margin: 9px 2px 0;
       color: var(--muted);
@@ -1194,7 +1199,7 @@
 
     .hourly-table {
       width: 100%;
-      min-width: 670px;
+      min-width: 1060px;
       border-collapse: collapse;
       text-align: left;
       font-variant-numeric: tabular-nums;
@@ -1280,8 +1285,8 @@
         </p>
       </div>
       <div class="topbar-meta">
-        <span>CCE 270 · STAGE 2</span>
-        <span class="demo-tag">Hourly forecast</span>
+        <span>CCE 270 · STAGE 3</span>
+        <span class="demo-tag">Seven-day activity outlook</span>
       </div>
     </header>
 
@@ -1289,12 +1294,12 @@
       <section class="hero" aria-labelledby="page-title">
         <p class="eyebrow">Construction weather planning</p>
         <h1 id="page-title">Plan the workday with confidence.</h1>
-        <p class="hero-copy">Select a jobsite to view seven days of local hourly weather for construction planning.</p>
+        <p class="hero-copy">Select a jobsite to compare seven days of local weather conditions for crane lifts, concrete pours, and roofing.</p>
       </section>
 
-      <aside class="demo-notice" aria-label="Stage 2 feature notice">
+      <aside class="demo-notice" aria-label="Planning rating guidance">
         <span class="demo-notice-icon" aria-hidden="true">!</span>
-        <div><strong>Forecast data only.</strong> Weather values will be shown without GO, CAUTION, or NO-GO ratings in this stage. Activity ratings are a later stage.</div>
+        <div><strong>Simplified planning assumptions.</strong> Ratings summarize hourly weather conditions; they are not safety decisions or guarantees.</div>
       </aside>
 
       <details class="settings-panel" open>
@@ -1303,7 +1308,7 @@
             <span class="settings-icon" aria-hidden="true">&#9881;</span>
             <span>
               <span class="settings-title">Planning thresholds</span>
-              <span class="settings-caption">Adjust planning thresholds · no activity ratings in this stage</span>
+              <span class="settings-caption">Changes recalculate ratings without reloading the forecast</span>
             </span>
           </span>
           <span class="settings-chevron" aria-hidden="true">&#9660;</span>
@@ -1327,7 +1332,7 @@
               <input id="working-hours" type="text" value="7:00 AM - 5:00 PM" disabled aria-describedby="settings-help">
             </div>
           </div>
-          <p class="setting-help" id="settings-help">Working hours are fixed at 7:00 AM-5:00 PM. Thresholds are adjustable and will be used by a later stage; changing them does not calculate ratings yet.</p>
+          <p class="setting-help" id="settings-help">Working hours are fixed at 7:00 AM-5:00 PM in jobsite local time. Valid threshold changes immediately recalculate daily ratings without downloading the forecast again.</p>
           <p class="settings-validation" id="settings-validation" role="alert" hidden></p>
         </div>
       </details>
@@ -1373,8 +1378,8 @@
           <div class="section-heading-main">
             <span class="section-number" aria-hidden="true">2</span>
             <div>
-              <h2 class="section-title" id="calendar-title">Seven-day hourly forecast</h2>
-              <p class="section-subtitle">Select a day to inspect weather during fixed working hours.</p>
+              <h2 class="section-title" id="calendar-title">Seven-day activity outlook</h2>
+              <p class="section-subtitle">Daily ratings use the worst hourly result from 7:00 AM through 4:00 PM local time.</p>
             </div>
           </div>
           <span class="data-label">Open-Meteo · 7 days</span>
@@ -1382,21 +1387,44 @@
 
         <div class="forecast-message" id="forecast-status" data-state="info" role="status" aria-live="polite">
           <span class="message-icon" id="forecast-status-icon" aria-hidden="true">i</span>
-          <p id="forecast-status-text">Select a point on the map to load a seven-day forecast. No activity ratings are calculated in Stage 2.</p>
+          <p id="forecast-status-text">Select a point on the map to load the forecast and calculate activity ratings.</p>
         </div>
 
         <div class="calendar-grid" id="calendar-grid" data-loaded="false" role="group" aria-label="Seven-day forecast days"></div>
-        <p class="selection-hint" id="calendar-hint">Hourly readings for 7:00 AM-4:00 PM local time will appear in the selected-day details.</p>
+        <p class="selection-hint" id="calendar-hint">Select a day to inspect hourly weather values, activity ratings, and the highest-risk hour in jobsite local time.</p>
 
         <section class="panel detail-panel" id="day-details" aria-labelledby="detail-heading" hidden>
           <div class="detail-head">
             <div>
               <div class="detail-title">
-                <h3 id="detail-heading">Hourly weather details</h3>
+                <h3 id="detail-heading">Daily activity details</h3>
                 <span class="sample-stamp" id="detail-timezone">Jobsite local time</span>
               </div>
-              <p class="detail-intro" id="detail-intro">Raw forecast values only; activity ratings will be added in Stage 3.</p>
+              <p class="detail-intro" id="detail-intro">Activity results and hourly weather during the fixed workday.</p>
             </div>
+          </div>
+          <div class="detail-body" id="activity-details" aria-label="Daily activity ratings and explanations">
+            <article class="detail-row" aria-labelledby="detail-crane-title">
+              <span class="detail-activity" id="detail-crane-title">Crane lifts</span>
+              <div class="detail-value" id="detail-crane-rating"></div>
+              <p class="detail-reading" id="detail-crane-reading"></p>
+              <p class="detail-risk-time" id="detail-crane-risk"></p>
+              <p class="detail-explanation" id="detail-crane-explanation"></p>
+            </article>
+            <article class="detail-row" aria-labelledby="detail-concrete-title">
+              <span class="detail-activity" id="detail-concrete-title">Concrete pours</span>
+              <div class="detail-value" id="detail-concrete-rating"></div>
+              <p class="detail-reading" id="detail-concrete-reading"></p>
+              <p class="detail-risk-time" id="detail-concrete-risk"></p>
+              <p class="detail-explanation" id="detail-concrete-explanation"></p>
+            </article>
+            <article class="detail-row" aria-labelledby="detail-roofing-title">
+              <span class="detail-activity" id="detail-roofing-title">Roofing</span>
+              <div class="detail-value" id="detail-roofing-rating"></div>
+              <p class="detail-reading" id="detail-roofing-reading"></p>
+              <p class="detail-risk-time" id="detail-roofing-risk"></p>
+              <p class="detail-explanation" id="detail-roofing-explanation"></p>
+            </article>
           </div>
           <p class="missing-warning" id="missing-warning" role="status" hidden></p>
           <div class="hourly-table-wrap" role="region" aria-label="Hourly forecast values" tabindex="0">
@@ -1408,6 +1436,9 @@
                   <th scope="col">Wind speed (mph)</th>
                   <th scope="col">Wind gust (mph)</th>
                   <th scope="col">Precipitation probability (%)</th>
+                  <th scope="col">Crane rating</th>
+                  <th scope="col">Concrete rating</th>
+                  <th scope="col">Roofing rating</th>
                 </tr>
               </thead>
               <tbody id="hourly-body"></tbody>
@@ -1422,7 +1453,7 @@
       </aside>
     </main>
 
-    <p class="footer-note">Stage 2 · Open-Meteo hourly weather data · No activity ratings are calculated yet.</p>
+    <p class="footer-note">Stage 3 · Simplified weather-based planning ratings · Fixed 7:00 AM-5:00 PM local workday</p>
   </div>
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -1452,6 +1483,13 @@
     let activeController;
     let jobsiteTimeZone = "";
     let forecastDays = [];
+    let selectedDayIndex = 0;
+    const activityDefinitions = [
+      { key: "crane", label: "Crane lifts" },
+      { key: "concrete", label: "Concrete pours" },
+      { key: "roofing", label: "Roofing" }
+    ];
+    const ratingRank = { GO: 0, CAUTION: 1, "NO-GO": 2 };
 
     function setForecastMessage(state, message) {
       forecastStatus.dataset.state = state;
@@ -1523,16 +1561,16 @@
         }
 
         const hour = Number(time.slice(11, 13));
-        const date = time.slice(0, 10);
-        if (!groups.has(date)) {
-          groups.set(date, { date, hours: [] });
-        }
-
         if (hour < 7 || hour >= 17) {
           return;
         }
 
-        groups.get(date).hours.push({
+        const date = time.slice(0, 10);
+        if (!groups.has(date)) {
+          groups.set(date, new Map());
+        }
+
+        groups.get(date).set(time.slice(11, 16), {
           time: time.slice(11, 16),
           temperature: valueAt(hourly.temperature_2m, index),
           wind: valueAt(hourly.wind_speed_10m, index),
@@ -1541,39 +1579,21 @@
         });
       });
 
-      if (groups.size === 0) {
-        throw new Error("No hourly forecast data was available during the fixed 7:00 AM-5:00 PM workday.");
-      }
+      const expectedTimes = Array.from({ length: 10 }, (_, index) => {
+        return `${String(index + 7).padStart(2, "0")}:00`;
+      });
 
       return getNextSevenLocalDates(timeZone).map((date) => {
-        const group = groups.get(date);
-        return { date, hours: group ? group.hours : [] };
+        const availableHours = groups.get(date) || new Map();
+        const hours = expectedTimes.map((time) => availableHours.get(time) || {
+          time,
+          temperature: null,
+          wind: null,
+          gust: null,
+          precipitation: null
+        });
+        return { date, hours, ratings: null };
       });
-    }
-
-    function createDayCard(day, index) {
-      const card = document.createElement("button");
-      card.className = "day-card";
-      card.type = "button";
-      card.setAttribute("aria-controls", "day-details");
-      card.setAttribute("aria-pressed", "false");
-      card.setAttribute("aria-label", `Show hourly weather for ${formatLocalDate(day.date)}`);
-
-      const heading = document.createElement("span");
-      heading.className = "day-heading";
-
-      const name = document.createElement("span");
-      name.className = "day-name";
-      name.textContent = formatLocalDate(day.date);
-
-      const dayNumber = document.createElement("span");
-      dayNumber.className = "day-label";
-      dayNumber.textContent = `Day ${index + 1} · ${day.hours.length} work-hour records`;
-
-      heading.append(name);
-      card.append(heading, dayNumber);
-      card.addEventListener("click", () => selectForecastDay(index));
-      return card;
     }
 
     function formatWeatherValue(value, unit, decimals) {
@@ -1585,6 +1605,267 @@
       return `${formatted} ${unit}`;
     }
 
+    function formatTime(time) {
+      const [hour, minute] = time.split(":").map(Number);
+      const period = hour >= 12 ? "PM" : "AM";
+      return `${hour % 12 || 12}:${String(minute).padStart(2, "0")} ${period}`;
+    }
+
+    function createRatingBadge(rating, label) {
+      const badge = document.createElement("span");
+      const status = rating || "Unavailable";
+      const className = status === "NO-GO" ? "no-go" : status.toLowerCase();
+      badge.className = `rating rating--${className}`;
+      badge.setAttribute("aria-label", `${label}: ${status}`);
+
+      const icon = document.createElement("span");
+      icon.className = "rating-icon";
+      icon.setAttribute("aria-hidden", "true");
+      icon.textContent = status === "GO" ? "✓" : status === "CAUTION" ? "!" : status === "NO-GO" ? "×" : "–";
+      badge.append(icon, document.createTextNode(status));
+      return badge;
+    }
+
+    function createDayCard(day, index) {
+      const card = document.createElement("button");
+      card.className = "day-card";
+      card.type = "button";
+      card.setAttribute("aria-controls", "day-details");
+      card.setAttribute("aria-pressed", String(index === selectedDayIndex));
+      card.setAttribute("aria-label", `Show activity ratings for ${formatLocalDate(day.date)}`);
+
+      const heading = document.createElement("span");
+      heading.className = "day-heading";
+
+      const name = document.createElement("span");
+      name.className = "day-name";
+      name.textContent = formatLocalDate(day.date);
+
+      const dayNumber = document.createElement("span");
+      dayNumber.className = "day-label";
+      dayNumber.textContent = "7 AM-5 PM local";
+
+      const activityList = document.createElement("span");
+      activityList.className = "activity-list";
+      activityDefinitions.forEach(({ key, label }) => {
+        const item = document.createElement("span");
+        item.className = "activity-item";
+        const activityName = document.createElement("span");
+        activityName.className = "activity-name";
+        activityName.textContent = label;
+        const activityRating = day.ratings ? day.ratings[key].rating : null;
+        item.append(activityName, createRatingBadge(activityRating, label));
+        activityList.append(item);
+      });
+
+      heading.append(name, dayNumber);
+      card.append(heading, activityList);
+      card.addEventListener("click", () => selectForecastDay(index));
+      return card;
+    }
+
+    function renderCalendar() {
+      calendarGrid.replaceChildren();
+      forecastDays.forEach((day, index) => calendarGrid.append(createDayCard(day, index)));
+    }
+
+    function rateCrane(hour, limit) {
+      const windReadings = [
+        { label: "Sustained wind", value: hour.wind },
+        { label: "Wind gust", value: hour.gust }
+      ];
+      const missingReadings = windReadings.filter(({ value }) => value === null);
+      const knownReadings = windReadings.filter(({ value }) => value !== null);
+      const limitReading = knownReadings
+        .filter(({ value }) => value >= limit)
+        .sort((left, right) => right.value - left.value)[0];
+      const riskScore = knownReadings.length
+        ? Math.max(...knownReadings.map(({ value }) => value)) / limit
+        : Number.NEGATIVE_INFINITY;
+      const cautionThreshold = limit * 0.9;
+
+      if (limitReading) {
+        const reason = `${limitReading.label} ${formatWeatherValue(limitReading.value, "mph", 1)} reaches or exceeds the ${formatWeatherValue(limit, "mph", 1)} limit.${missingReadings.length ? ` ${missingReadings.map(({ label }) => label.toLowerCase()).join(" and ")} missing; the known limit exceedance establishes NO-GO.` : ""}`;
+        return { rating: "NO-GO", reason, riskScore };
+      }
+
+      if (missingReadings.length) {
+        return {
+          rating: "CAUTION",
+          reason: `Missing ${missingReadings.map(({ label }) => label.toLowerCase()).join(" and ")} data; missing weather data is rated CAUTION.`,
+          riskScore
+        };
+      }
+
+      const cautionReading = windReadings
+        .filter(({ value }) => value >= cautionThreshold)
+        .sort((left, right) => right.value - left.value)[0];
+      if (cautionReading) {
+        return {
+          rating: "CAUTION",
+          reason: `${cautionReading.label} ${formatWeatherValue(cautionReading.value, "mph", 1)} reaches the 90% caution threshold of ${formatWeatherValue(cautionThreshold, "mph", 1)} but is below the ${formatWeatherValue(limit, "mph", 1)} limit.`,
+          riskScore
+        };
+      }
+
+      return {
+        rating: "GO",
+        reason: `Sustained wind and gusts are both below the 90% caution threshold of ${formatWeatherValue(cautionThreshold, "mph", 1)}.`,
+        riskScore
+      };
+    }
+
+    function rateConcrete(hour, minimum) {
+      const temperature = hour.temperature;
+      if (temperature === null) {
+        return {
+          rating: "CAUTION",
+          reason: "Temperature data is missing; missing weather data is rated CAUTION.",
+          riskScore: Number.NEGATIVE_INFINITY
+        };
+      }
+
+      const cautionMaximum = minimum + 5;
+      const riskScore = -temperature;
+      if (temperature < minimum) {
+        return {
+          rating: "NO-GO",
+          reason: `Temperature ${formatWeatherValue(temperature, "°F", 1)} is below the configured ${formatWeatherValue(minimum, "°F", 1)} minimum.`,
+          riskScore
+        };
+      }
+      if (temperature <= cautionMaximum) {
+        return {
+          rating: "CAUTION",
+          reason: `Temperature ${formatWeatherValue(temperature, "°F", 1)} is within the ${formatWeatherValue(minimum, "°F", 1)}-${formatWeatherValue(cautionMaximum, "°F", 1)} caution range, inclusive.`,
+          riskScore
+        };
+      }
+
+      return {
+        rating: "GO",
+        reason: `Temperature ${formatWeatherValue(temperature, "°F", 1)} is above the ${formatWeatherValue(cautionMaximum, "°F", 1)} caution range.`,
+        riskScore
+      };
+    }
+
+    function rateRoofing(hour, threshold) {
+      const precipitation = hour.precipitation;
+      if (precipitation === null) {
+        return {
+          rating: "CAUTION",
+          reason: "Precipitation probability is missing; missing weather data is rated CAUTION.",
+          riskScore: Number.NEGATIVE_INFINITY
+        };
+      }
+
+      const cautionThreshold = threshold * 0.5;
+      if (precipitation > threshold) {
+        return {
+          rating: "NO-GO",
+          reason: `Precipitation probability ${formatWeatherValue(precipitation, "%", 0)} is above the configured ${formatWeatherValue(threshold, "%", 0)} threshold.`,
+          riskScore: precipitation
+        };
+      }
+      if (precipitation >= cautionThreshold) {
+        return {
+          rating: "CAUTION",
+          reason: `Precipitation probability ${formatWeatherValue(precipitation, "%", 0)} is within the ${formatWeatherValue(cautionThreshold, "%", 0)}-${formatWeatherValue(threshold, "%", 0)} caution range, inclusive.`,
+          riskScore: precipitation
+        };
+      }
+
+      return {
+        rating: "GO",
+        reason: `Precipitation probability ${formatWeatherValue(precipitation, "%", 0)} is below the ${formatWeatherValue(cautionThreshold, "%", 0)} caution threshold.`,
+        riskScore: precipitation
+      };
+    }
+
+    function getHourlyActivityResult(hour, key, thresholds) {
+      if (key === "crane") {
+        return rateCrane(hour, thresholds.crane);
+      }
+      if (key === "concrete") {
+        return rateConcrete(hour, thresholds.concrete);
+      }
+      return rateRoofing(hour, thresholds.roofing);
+    }
+
+    function getActivityReading(hour, key) {
+      if (key === "crane") {
+        return `Sustained wind: ${formatWeatherValue(hour.wind, "mph", 1)} · Gust: ${formatWeatherValue(hour.gust, "mph", 1)}`;
+      }
+      if (key === "concrete") {
+        return `Temperature: ${formatWeatherValue(hour.temperature, "°F", 1)}`;
+      }
+      return `Precipitation probability: ${formatWeatherValue(hour.precipitation, "%", 0)}`;
+    }
+
+    function calculateDailyActivity(day, key) {
+      let highestRisk = null;
+      day.hours.forEach((hour) => {
+        const result = hour.ratings[key];
+        const candidate = { hour, result };
+        if (
+          highestRisk === null ||
+          ratingRank[result.rating] > ratingRank[highestRisk.result.rating] ||
+          (ratingRank[result.rating] === ratingRank[highestRisk.result.rating] && result.riskScore > highestRisk.result.riskScore)
+        ) {
+          highestRisk = candidate;
+        }
+      });
+
+      if (highestRisk === null) {
+        return null;
+      }
+
+      const rating = highestRisk.result.rating;
+      const explanation = rating === "GO"
+        ? `All working-hour results were GO. The closest-to-threshold hour was ${formatTime(highestRisk.hour.time)}: ${highestRisk.result.reason}`
+        : `The worst hourly result during working hours was ${rating} at ${formatTime(highestRisk.hour.time)}. ${highestRisk.result.reason}`;
+      return {
+        rating,
+        riskHour: highestRisk.hour,
+        explanation
+      };
+    }
+
+    function recalculateForecastRatings() {
+      const validThresholds = validateThresholds();
+      if (!validThresholds) {
+        forecastDays.forEach((day) => {
+          day.ratings = null;
+          day.hours.forEach((hour) => {
+            hour.ratings = null;
+          });
+        });
+      } else {
+        const thresholds = {
+          crane: Number(thresholdFields[0].input.value),
+          concrete: Number(thresholdFields[1].input.value),
+          roofing: Number(thresholdFields[2].input.value)
+        };
+        forecastDays.forEach((day) => {
+          day.hours.forEach((hour) => {
+            hour.ratings = {};
+            activityDefinitions.forEach(({ key }) => {
+              hour.ratings[key] = getHourlyActivityResult(hour, key, thresholds);
+            });
+          });
+          day.ratings = {};
+          activityDefinitions.forEach(({ key }) => {
+            day.ratings[key] = calculateDailyActivity(day, key);
+          });
+        });
+      }
+
+      if (forecastDays.length) {
+        renderCalendar();
+        selectForecastDay(selectedDayIndex);
+      }
+    }
+
     function appendCell(row, value) {
       const cell = document.createElement("td");
       cell.textContent = value;
@@ -1594,57 +1875,89 @@
       row.append(cell);
     }
 
+    function appendRatingCell(row, rating, label) {
+      const cell = document.createElement("td");
+      cell.append(createRatingBadge(rating, label));
+      row.append(cell);
+    }
+
+    function renderActivityDetails(day) {
+      activityDefinitions.forEach(({ key, label }) => {
+        const result = day.ratings ? day.ratings[key] : null;
+        const ratingElement = document.querySelector(`#detail-${key}-rating`);
+        ratingElement.replaceChildren(createRatingBadge(result ? result.rating : null, label));
+        document.querySelector(`#detail-${key}-reading`).textContent = result
+          ? getActivityReading(result.riskHour, key)
+          : "Ratings unavailable until all threshold settings are valid.";
+        document.querySelector(`#detail-${key}-risk`).textContent = result
+          ? `Highest-risk hour: ${formatTime(result.riskHour.time)} (${result.rating})`
+          : "Highest-risk hour: unavailable";
+        document.querySelector(`#detail-${key}-explanation`).textContent = result
+          ? result.explanation
+          : "Correct the invalid threshold setting to calculate this activity.";
+      });
+    }
+
+    function renderMissingWarning(day) {
+      const affected = activityDefinitions
+        .map(({ key, label }) => ({
+          label,
+          count: day.hours.filter((hour) => hasMissingWeather(hour, key)).length
+        }))
+        .filter(({ count }) => count > 0);
+
+      missingWarning.hidden = affected.length === 0;
+      if (affected.length) {
+        const summary = affected.map(({ label, count }) => `${label}: ${count} of 10 hour(s)`).join("; ");
+        missingWarning.textContent = `Missing working-hour data: ${summary}. Missing data is rated CAUTION unless known hourly conditions establish NO-GO.`;
+      } else {
+        missingWarning.textContent = "";
+      }
+    }
+
+    function hasMissingWeather(hour, key) {
+      if (key === "crane") {
+        return hour.wind === null || hour.gust === null;
+      }
+      if (key === "concrete") {
+        return hour.temperature === null;
+      }
+      return hour.precipitation === null;
+    }
+
     function selectForecastDay(index) {
       const day = forecastDays[index];
       if (!day) {
         return;
       }
 
+      selectedDayIndex = index;
       calendarGrid.querySelectorAll(".day-card").forEach((card, cardIndex) => {
         card.setAttribute("aria-pressed", String(cardIndex === index));
       });
 
       document.querySelector("#detail-heading").textContent = formatLocalDate(day.date);
       document.querySelector("#detail-timezone").textContent = jobsiteTimeZone;
-      document.querySelector("#detail-intro").textContent = `Hourly forecast from 7:00 AM through 4:00 PM · jobsite local time (${jobsiteTimeZone}). No activity ratings are calculated in Stage 2.`;
+      document.querySelector("#detail-intro").textContent = `Daily ratings use the worst hourly result from 7:00 AM through 4:00 PM in ${jobsiteTimeZone} local time.`;
+      renderActivityDetails(day);
+      renderMissingWarning(day);
 
       hourlyBody.replaceChildren();
-      let missingValues = 0;
-      const expectedHours = 10;
-      const requiredValues = expectedHours * 4;
-
-      if (day.hours.length === 0) {
+      day.hours.forEach((hour) => {
         const row = document.createElement("tr");
-        const cell = document.createElement("td");
-        cell.colSpan = 5;
-        cell.textContent = "No hourly forecast records are available in the fixed working-hours window for this date.";
-        row.append(cell);
-        hourlyBody.append(row);
-      } else {
-        day.hours.forEach((hour) => {
-          const row = document.createElement("tr");
-          appendCell(row, hour.time);
-          const values = [
-            formatWeatherValue(hour.temperature, "°F", 1),
-            formatWeatherValue(hour.wind, "mph", 1),
-            formatWeatherValue(hour.gust, "mph", 1),
-            formatWeatherValue(hour.precipitation, "%", 0)
-          ];
-          values.forEach((value) => {
-            if (value === "Missing") {
-              missingValues += 1;
-            }
-            appendCell(row, value);
-          });
-          hourlyBody.append(row);
+        appendCell(row, formatTime(hour.time));
+        [
+          formatWeatherValue(hour.temperature, "°F", 1),
+          formatWeatherValue(hour.wind, "mph", 1),
+          formatWeatherValue(hour.gust, "mph", 1),
+          formatWeatherValue(hour.precipitation, "%", 0)
+        ].forEach((value) => appendCell(row, value));
+        activityDefinitions.forEach(({ key, label }) => {
+          const rating = hour.ratings ? hour.ratings[key].rating : null;
+          appendRatingCell(row, rating, `${label} hourly rating`);
         });
-      }
-
-      const missingHours = Math.max(0, expectedHours - day.hours.length);
-      const unavailableValues = missingValues + missingHours * 4;
-      const hasMissingData = missingHours > 0 || missingValues > 0;
-      missingWarning.hidden = !hasMissingData;
-      missingWarning.textContent = `Missing hourly data: ${missingHours} of ${expectedHours} working-hour timestamps and ${unavailableValues} of ${requiredValues} weather values are unavailable. Missing values are shown explicitly; no values are substituted.`;
+        hourlyBody.append(row);
+      });
       dayDetails.hidden = false;
     }
 
@@ -1657,18 +1970,11 @@
       jobsiteTimeZone = timezone;
       locationTimezone.textContent = timezone;
       forecastDays = collectForecastDays(payload, timezone);
-      calendarGrid.replaceChildren();
-      forecastDays.forEach((day, index) => calendarGrid.append(createDayCard(day, index)));
+      selectedDayIndex = 0;
       calendarGrid.dataset.loaded = "true";
-      document.querySelector("#calendar-hint").textContent = `Select a date to view raw hourly values for 7:00 AM-4:00 PM in ${timezone}. Thresholds are adjustable, but ratings are not calculated in Stage 2.`;
-      selectForecastDay(0);
-
-      if (forecastDays.length < 7) {
-        setForecastMessage("error", `Open-Meteo returned ${forecastDays.length} forecast day(s), rather than the requested seven. Select a location again to retry.`);
-        return;
-      }
-
-      setForecastMessage("success", `Seven-day hourly forecast loaded for ${timezone}. Select any day to inspect the weather values.`);
+      document.querySelector("#calendar-hint").textContent = `Select a date to view hourly weather and activity ratings for 7:00 AM-4:00 PM in ${timezone}.`;
+      recalculateForecastRatings();
+      setForecastMessage("success", `Seven-day hourly forecast loaded for ${timezone}. Activity ratings use the worst result during the fixed workday.`);
     }
 
     async function loadForecast(latitude, longitude, requestId, signal) {
@@ -1764,16 +2070,17 @@
       if (invalid.length === 0) {
         settingsValidation.hidden = true;
         settingsValidation.textContent = "";
-        return;
+        return true;
       }
 
       settingsValidation.textContent = invalid.map(({ input, min, max, unit }) => {
         return `${input.labels[0].textContent} must be between ${min} and ${max} ${unit}.`;
       }).join(" ");
       settingsValidation.hidden = false;
+      return false;
     }
 
-    thresholdFields.forEach(({ input }) => input.addEventListener("input", validateThresholds));
+    thresholdFields.forEach(({ input }) => input.addEventListener("input", recalculateForecastRatings));
 
     if (typeof L === "undefined") {
       setMapError("The interactive map library could not be loaded. Check your connection and reload the page.");
