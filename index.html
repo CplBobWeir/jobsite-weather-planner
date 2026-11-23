@@ -1272,6 +1272,233 @@
         max-width: 230px;
       }
     }
+
+    .calendar-actions {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+    }
+
+    .print-report-button {
+      min-height: 36px;
+      padding: 7px 11px;
+      border: 1px solid #c85d28;
+      border-radius: 7px;
+      background: var(--orange);
+      color: #fff;
+      font-size: 11px;
+      font-weight: 800;
+      white-space: nowrap;
+      cursor: pointer;
+    }
+
+    .print-report-button:hover:not(:disabled) {
+      background: var(--orange-dark);
+    }
+
+    .print-report-button:disabled {
+      cursor: not-allowed;
+      opacity: .58;
+    }
+
+    .print-report {
+      display: none;
+    }
+
+    @media (max-width: 620px) {
+      .calendar-actions {
+        margin-left: 38px;
+        flex-wrap: wrap;
+      }
+
+      .calendar-section > .section-heading .data-label {
+        margin-left: 0;
+      }
+    }
+
+    @page {
+      size: letter portrait;
+      margin: 0.55in;
+    }
+
+    @media print {
+      html,
+      body {
+        background: #fff !important;
+        color: #17212b !important;
+        font-family: Arial, Helvetica, sans-serif;
+        font-size: 9pt;
+        line-height: 1.35;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+      }
+
+      body > .page-shell {
+        display: none !important;
+      }
+
+      #print-report {
+        display: block !important;
+        width: 100%;
+        margin: 0;
+        color: #17212b;
+      }
+
+      .print-report__header {
+        margin-bottom: 10px;
+        padding-bottom: 7px;
+        border-bottom: 2px solid #d86c32;
+        break-after: avoid-page;
+        page-break-after: avoid;
+      }
+
+      .print-report__header h1 {
+        margin: 0;
+        font-size: 20pt;
+        letter-spacing: -.03em;
+      }
+
+      .print-report__subtitle {
+        margin: 3px 0 0;
+        color: #56636d;
+        font-size: 9pt;
+      }
+
+      .print-report__metadata {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 5px 16px;
+        margin: 0 0 10px;
+        padding: 0 0 9px;
+        border-bottom: 1px solid #cbd4d9;
+      }
+
+      .print-report__metadata-item {
+        min-width: 0;
+      }
+
+      .print-report__metadata-item dt {
+        color: #596671;
+        font-size: 7pt;
+        font-weight: 700;
+        letter-spacing: .04em;
+        text-transform: uppercase;
+      }
+
+      .print-report__metadata-item dd {
+        margin: 1px 0 0;
+        font-size: 8.5pt;
+        font-weight: 700;
+        overflow-wrap: anywhere;
+      }
+
+      .print-report__day {
+        margin: 0 0 8px;
+        break-inside: avoid-page;
+        page-break-inside: avoid;
+      }
+
+      .print-report__day h2 {
+        margin: 0 0 3px;
+        font-size: 11pt;
+        break-after: avoid-page;
+        page-break-after: avoid;
+      }
+
+      .print-report__table {
+        width: 100%;
+        border-collapse: collapse;
+        table-layout: fixed;
+      }
+
+      .print-report__table th,
+      .print-report__table td {
+        padding: 4px 5px;
+        border: 1px solid #cbd4d9;
+        font-size: 8.5pt;
+        text-align: left;
+        vertical-align: top;
+        overflow-wrap: anywhere;
+      }
+
+      .print-report__table thead {
+        display: table-header-group;
+      }
+
+      .print-report__table tr {
+        break-inside: avoid-page;
+        page-break-inside: avoid;
+      }
+
+      .print-report__table thead th {
+        background: #eef1f3;
+        color: #34424e;
+        font-size: 7.5pt;
+      }
+
+      .print-report__table th:nth-child(1) {
+        width: 22%;
+      }
+
+      .print-report__table th:nth-child(2) {
+        width: 14%;
+      }
+
+      .print-report__table th:nth-child(3) {
+        width: 23%;
+      }
+
+      .print-report__table th:nth-child(4) {
+        width: 41%;
+      }
+
+      .print-report__activity-name {
+        display: block;
+        margin-bottom: 3px;
+        font-size: 8.5pt;
+      }
+
+      .print-report__rating {
+        display: inline-block;
+        padding: 1px 4px;
+        border: 1px solid currentColor;
+        border-radius: 3px;
+        font-size: 7pt;
+        font-weight: 800;
+      }
+
+      .print-report__rating--go {
+        background: #e8f4ec;
+        color: #23734c;
+      }
+
+      .print-report__rating--caution {
+        background: #fff3d4;
+        color: #87590a;
+      }
+
+      .print-report__rating--no-go {
+        background: #fbeae8;
+        color: #a43d36;
+      }
+
+      .print-report__rating--unavailable {
+        background: #eef1f3;
+        color: #53616d;
+      }
+
+      .print-report__disclaimer {
+        margin: 10px 0 0;
+        padding: 7px 9px;
+        border: 1px solid #d9c7ad;
+        border-left: 3px solid #d86c32;
+        background: #fffaf2;
+        color: #493d2d;
+        font-size: 8pt;
+        break-inside: avoid-page;
+        page-break-inside: avoid;
+      }
+    }
   </style>
 </head>
 <body>
@@ -1285,7 +1512,7 @@
         </p>
       </div>
       <div class="topbar-meta">
-        <span>CCE 270 · STAGE 5</span>
+        <span>CCE 270 · STAGE 6</span>
         <span class="demo-tag">Seven-day activity outlook</span>
       </div>
     </header>
@@ -1386,7 +1613,10 @@
               <p class="section-subtitle" id="calendar-period">Daily ratings use the worst hourly result during the selected jobsite-local work period.</p>
             </div>
           </div>
-          <span class="data-label">Open-Meteo · 7 days</span>
+          <div class="calendar-actions">
+            <span class="data-label">Open-Meteo · 7 days</span>
+            <button class="print-report-button" id="print-report-button" type="button" aria-controls="print-report" disabled>Print Report</button>
+          </div>
         </div>
 
         <div class="forecast-message" id="forecast-status" data-state="info" role="status" aria-live="polite">
@@ -1457,8 +1687,10 @@
       </aside>
     </main>
 
-    <p class="footer-note">Stage 5 · Simplified weather-based planning ratings · Jobsite-local working hours</p>
+    <p class="footer-note">Stage 6 · Simplified weather-based planning ratings · Jobsite-local working hours</p>
   </div>
+
+  <section class="print-report" id="print-report" aria-labelledby="print-report-title" aria-hidden="true"></section>
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script>
@@ -1466,6 +1698,8 @@
     const forecastStatusIcon = document.querySelector("#forecast-status-icon");
     const forecastStatusText = document.querySelector("#forecast-status-text");
     const calendarGrid = document.querySelector("#calendar-grid");
+    const printReportButton = document.querySelector("#print-report-button");
+    const printReportElement = document.querySelector("#print-report");
     const dayDetails = document.querySelector("#day-details");
     const hourlyBody = document.querySelector("#hourly-body");
     const missingWarning = document.querySelector("#missing-warning");
@@ -1531,6 +1765,18 @@
         weekday: "short",
         month: "short",
         day: "numeric",
+        timeZone: "UTC"
+      }).format(utcDate);
+    }
+
+    function formatReportDate(dateString) {
+      const [year, month, day] = dateString.split("-").map(Number);
+      const utcDate = new Date(Date.UTC(year, month - 1, day, 12));
+      return new Intl.DateTimeFormat("en-US", {
+        weekday: "long",
+        month: "long",
+        day: "numeric",
+        year: "numeric",
         timeZone: "UTC"
       }).format(utcDate);
     }
@@ -1695,6 +1941,131 @@
     function renderCalendar() {
       calendarGrid.replaceChildren();
       forecastDays.forEach((day, index) => calendarGrid.append(createDayCard(day, index)));
+    }
+
+    function updatePrintButtonState(validSettings) {
+      printReportButton.disabled = forecastDays.length !== 7 ||
+        !jobsiteTimeZone ||
+        locationCoordinates.textContent === "Not selected" ||
+        !validSettings;
+    }
+
+    function createReportMetadata(label, value) {
+      const item = document.createElement("div");
+      item.className = "print-report__metadata-item";
+      const term = document.createElement("dt");
+      term.textContent = label;
+      const description = document.createElement("dd");
+      description.textContent = value;
+      item.append(term, description);
+      return item;
+    }
+
+    function buildPrintReport() {
+      printReportElement.replaceChildren();
+      printReportElement.setAttribute("aria-hidden", "false");
+
+      const header = document.createElement("header");
+      header.className = "print-report__header";
+      const title = document.createElement("h1");
+      title.id = "print-report-title";
+      title.textContent = "Seven-Day Jobsite Weather Report";
+      const subtitle = document.createElement("p");
+      subtitle.className = "print-report__subtitle";
+      subtitle.textContent = "Weather-based activity planning summary";
+      header.append(title, subtitle);
+
+      const metadata = document.createElement("dl");
+      metadata.className = "print-report__metadata";
+      const thresholds = {
+        crane: `${thresholdFields[0].input.value} mph`,
+        concrete: `${thresholdFields[1].input.value} °F`,
+        roofing: `${thresholdFields[2].input.value}%`
+      };
+      [
+        ["Jobsite coordinates", locationCoordinates.textContent],
+        ["Jobsite timezone", jobsiteTimeZone],
+        ["Forecast dates", `${formatReportDate(forecastDays[0].date)} – ${formatReportDate(forecastDays[forecastDays.length - 1].date)}`],
+        ["Working hours", `${formatTime(workdayStart.value)}-${formatTime(workdayEnd.value)} jobsite local time`],
+        ["Crane wind limit", thresholds.crane],
+        ["Concrete minimum temperature", thresholds.concrete],
+        ["Roofing precipitation threshold", thresholds.roofing],
+        ["Forecast provider", "Open-Meteo"]
+      ].forEach(([label, value]) => metadata.append(createReportMetadata(label, value)));
+
+      const forecast = document.createElement("div");
+      forecast.className = "print-report__days";
+      forecastDays.forEach((day) => {
+        const daySection = document.createElement("section");
+        daySection.className = "print-report__day";
+        const dayHeading = document.createElement("h2");
+        dayHeading.textContent = formatReportDate(day.date);
+
+        const table = document.createElement("table");
+        table.className = "print-report__table";
+        const thead = document.createElement("thead");
+        const headerRow = document.createElement("tr");
+        ["Activity and rating", "Highest-risk hour", "Weather measurements", "Explanation"].forEach((label) => {
+          const cell = document.createElement("th");
+          cell.scope = "col";
+          cell.textContent = label;
+          headerRow.append(cell);
+        });
+        thead.append(headerRow);
+        const tbody = document.createElement("tbody");
+
+        activityDefinitions.forEach(({ key, label }) => {
+          const result = day.ratings ? day.ratings[key] : null;
+          const row = document.createElement("tr");
+          const activityCell = document.createElement("th");
+          activityCell.scope = "row";
+          const activityName = document.createElement("span");
+          activityName.className = "print-report__activity-name";
+          activityName.textContent = label;
+          const rating = document.createElement("span");
+          const status = result ? result.rating : "Unavailable";
+          const ratingClass = status === "NO-GO" ? "no-go" : status.toLowerCase();
+          rating.className = `print-report__rating print-report__rating--${ratingClass}`;
+          rating.textContent = status;
+          activityCell.append(activityName, rating);
+
+          const riskHour = document.createElement("td");
+          riskHour.textContent = result ? formatTime(result.riskHour.time) : "Unavailable";
+          const reading = document.createElement("td");
+          reading.textContent = result ? getActivityReading(result.riskHour, key) : "Weather measurement unavailable.";
+          const explanation = document.createElement("td");
+          explanation.textContent = result
+            ? result.explanation
+            : "Rating unavailable because current settings or forecast data are incomplete.";
+          row.append(activityCell, riskHour, reading, explanation);
+          tbody.append(row);
+        });
+
+        table.append(thead, tbody);
+        daySection.append(dayHeading, table);
+        forecast.append(daySection);
+      });
+
+      const disclaimer = document.createElement("p");
+      disclaimer.className = "print-report__disclaimer";
+      const disclaimerTitle = document.createElement("strong");
+      disclaimerTitle.textContent = "Planning guidance only. ";
+      disclaimer.append(
+        disclaimerTitle,
+        document.createTextNode("Ratings are simplified weather-based planning guidance, not safety guarantees. Always follow manufacturer limits, project specifications, and qualified professional judgment.")
+      );
+
+      printReportElement.append(header, metadata, forecast, disclaimer);
+    }
+
+    function handlePrintReport() {
+      if (printReportButton.disabled || !validateSettings()) {
+        updatePrintButtonState(false);
+        return;
+      }
+
+      buildPrintReport();
+      window.print();
     }
 
     function rateCrane(hour, limit) {
@@ -1893,6 +2264,7 @@
       }
 
       updateWorkingPeriodText();
+      updatePrintButtonState(validSettings);
       if (forecastDays.length) {
         renderCalendar();
         selectForecastDay(selectedDayIndex);
@@ -2063,6 +2435,7 @@
       locationCoordinates.textContent = `${latitude.toFixed(5)}, ${longitude.toFixed(5)}`;
       locationTimezone.textContent = "Looking up...";
       locationStateText.textContent = "Loading forecast";
+      printReportButton.disabled = true;
       mapPrompt.hidden = true;
       setMapError("");
       setForecastMessage("loading", "Loading seven days of hourly weather for the selected jobsite...");
@@ -2099,6 +2472,7 @@
           calendarGrid.replaceChildren();
           calendarGrid.dataset.loaded = "false";
           dayDetails.hidden = true;
+          updatePrintButtonState(false);
           locationStateText.textContent = "Forecast unavailable";
           locationTimezone.textContent = "Unavailable";
           const message = error instanceof TypeError
@@ -2144,6 +2518,7 @@
       input.addEventListener("input", recalculateForecastRatings);
       input.addEventListener("change", recalculateForecastRatings);
     });
+    printReportButton.addEventListener("click", handlePrintReport);
 
     if (typeof L === "undefined") {
       setMapError("The interactive map library could not be loaded. Check your connection and reload the page.");
