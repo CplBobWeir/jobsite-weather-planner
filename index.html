@@ -281,7 +281,7 @@
 
     .settings-grid {
       display: grid;
-      grid-template-columns: repeat(4, minmax(0, 1fr));
+      grid-template-columns: repeat(3, minmax(0, 1fr));
       gap: 12px;
       padding-top: 15px;
     }
@@ -1285,7 +1285,7 @@
         </p>
       </div>
       <div class="topbar-meta">
-        <span>CCE 270 · STAGE 3</span>
+        <span>CCE 270 · STAGE 5</span>
         <span class="demo-tag">Seven-day activity outlook</span>
       </div>
     </header>
@@ -1307,7 +1307,7 @@
           <span class="settings-summary-copy">
             <span class="settings-icon" aria-hidden="true">&#9881;</span>
             <span>
-              <span class="settings-title">Planning thresholds</span>
+              <span class="settings-title">Planning settings</span>
               <span class="settings-caption">Changes recalculate ratings without reloading the forecast</span>
             </span>
           </span>
@@ -1328,11 +1328,15 @@
               <input id="roofing-threshold" type="number" value="30" min="0" max="100" step="1" inputmode="numeric" required aria-describedby="settings-help">
             </div>
             <div class="setting-field">
-              <label for="working-hours">Working hours · jobsite local time</label>
-              <input id="working-hours" type="text" value="7:00 AM - 5:00 PM" disabled aria-describedby="settings-help">
+              <label for="workday-start">Workday start · jobsite local time</label>
+              <input id="workday-start" type="time" value="07:00" min="00:00" max="23:00" step="3600" required aria-describedby="settings-help">
+            </div>
+            <div class="setting-field">
+              <label for="workday-end">Workday end · jobsite local time</label>
+              <input id="workday-end" type="time" value="17:00" min="00:00" max="23:00" step="3600" required aria-describedby="settings-help">
             </div>
           </div>
-          <p class="setting-help" id="settings-help">Working hours are fixed at 7:00 AM-5:00 PM in jobsite local time. Valid threshold changes immediately recalculate daily ratings without downloading the forecast again.</p>
+          <p class="setting-help" id="settings-help">Choose whole-hour times for a same-day work period. The start hour is included and the end hour is excluded. Working hours use the selected jobsite's local timezone; changes recalculate ratings without downloading the forecast again.</p>
           <p class="settings-validation" id="settings-validation" role="alert" hidden></p>
         </div>
       </details>
@@ -1379,7 +1383,7 @@
             <span class="section-number" aria-hidden="true">2</span>
             <div>
               <h2 class="section-title" id="calendar-title">Seven-day activity outlook</h2>
-              <p class="section-subtitle">Daily ratings use the worst hourly result from 7:00 AM through 4:00 PM local time.</p>
+              <p class="section-subtitle" id="calendar-period">Daily ratings use the worst hourly result during the selected jobsite-local work period.</p>
             </div>
           </div>
           <span class="data-label">Open-Meteo · 7 days</span>
@@ -1400,7 +1404,7 @@
                 <h3 id="detail-heading">Daily activity details</h3>
                 <span class="sample-stamp" id="detail-timezone">Jobsite local time</span>
               </div>
-              <p class="detail-intro" id="detail-intro">Activity results and hourly weather during the fixed workday.</p>
+              <p class="detail-intro" id="detail-intro">Activity results and hourly weather during the selected workday.</p>
             </div>
           </div>
           <div class="detail-body" id="activity-details" aria-label="Daily activity ratings and explanations">
@@ -1453,7 +1457,7 @@
       </aside>
     </main>
 
-    <p class="footer-note">Stage 3 · Simplified weather-based planning ratings · Fixed 7:00 AM-5:00 PM local workday</p>
+    <p class="footer-note">Stage 5 · Simplified weather-based planning ratings · Jobsite-local working hours</p>
   </div>
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -1471,6 +1475,8 @@
     const locationCoordinates = document.querySelector("#location-coordinates");
     const locationTimezone = document.querySelector("#location-timezone");
     const settingsValidation = document.querySelector("#settings-validation");
+    const workdayStart = document.querySelector("#workday-start");
+    const workdayEnd = document.querySelector("#workday-end");
     const thresholdFields = [
       { input: document.querySelector("#crane-limit"), min: 10, max: 60, unit: "mph" },
       { input: document.querySelector("#concrete-min"), min: 20, max: 60, unit: "°F" },
@@ -1560,11 +1566,6 @@
           throw new Error("The forecast response contained an invalid local timestamp.");
         }
 
-        const hour = Number(time.slice(11, 13));
-        if (hour < 7 || hour >= 17) {
-          return;
-        }
-
         const date = time.slice(0, 10);
         if (!groups.has(date)) {
           groups.set(date, new Map());
@@ -1579,8 +1580,8 @@
         });
       });
 
-      const expectedTimes = Array.from({ length: 10 }, (_, index) => {
-        return `${String(index + 7).padStart(2, "0")}:00`;
+      const expectedTimes = Array.from({ length: 24 }, (_, index) => {
+        return `${String(index).padStart(2, "0")}:00`;
       });
 
       return getNextSevenLocalDates(timeZone).map((date) => {
@@ -1609,6 +1610,33 @@
       const [hour, minute] = time.split(":").map(Number);
       const period = hour >= 12 ? "PM" : "AM";
       return `${hour % 12 || 12}:${String(minute).padStart(2, "0")} ${period}`;
+    }
+
+    function getWorkingHours(day) {
+      return day.hours.filter((hour) => hour.time >= workdayStart.value && hour.time < workdayEnd.value);
+    }
+
+    function hasValidWorkingPeriod() {
+      return workdayStart.validity.valid && workdayEnd.validity.valid && workdayStart.value < workdayEnd.value;
+    }
+
+    function getWorkingPeriodLabel() {
+      if (!hasValidWorkingPeriod()) {
+        return "Invalid working hours";
+      }
+      return `${formatTime(workdayStart.value)}-${formatTime(workdayEnd.value)} local`;
+    }
+
+    function updateWorkingPeriodText() {
+      if (getWorkingPeriodLabel() === "Invalid working hours") {
+        document.querySelector("#calendar-period").textContent = "Daily ratings are unavailable until valid same-day working hours are entered.";
+        document.querySelector("#calendar-hint").textContent = "Correct the workday start and end times to calculate ratings.";
+        return;
+      }
+
+      const period = getWorkingPeriodLabel();
+      document.querySelector("#calendar-period").textContent = `Daily ratings use hourly data from ${formatTime(workdayStart.value)} (inclusive) to ${formatTime(workdayEnd.value)} (exclusive) in jobsite local time.`;
+      document.querySelector("#calendar-hint").textContent = `Select a date to view hourly weather and activity ratings for ${period}.`;
     }
 
     function createRatingBadge(rating, label) {
@@ -1643,7 +1671,7 @@
 
       const dayNumber = document.createElement("span");
       dayNumber.className = "day-label";
-      dayNumber.textContent = "7 AM-5 PM local";
+      dayNumber.textContent = getWorkingPeriodLabel();
 
       const activityList = document.createElement("span");
       activityList.className = "activity-list";
@@ -1802,9 +1830,9 @@
       return `Precipitation probability: ${formatWeatherValue(hour.precipitation, "%", 0)}`;
     }
 
-    function calculateDailyActivity(day, key) {
+    function calculateDailyActivity(hours, key) {
       let highestRisk = null;
-      day.hours.forEach((hour) => {
+      hours.forEach((hour) => {
         const result = hour.ratings[key];
         const candidate = { hour, result };
         if (
@@ -1822,8 +1850,8 @@
 
       const rating = highestRisk.result.rating;
       const explanation = rating === "GO"
-        ? `All working-hour results were GO. The closest-to-threshold hour was ${formatTime(highestRisk.hour.time)}: ${highestRisk.result.reason}`
-        : `The worst hourly result during working hours was ${rating} at ${formatTime(highestRisk.hour.time)}. ${highestRisk.result.reason}`;
+        ? `All selected-hour results were GO. The closest-to-threshold hour was ${formatTime(highestRisk.hour.time)}: ${highestRisk.result.reason}`
+        : `The worst hourly result during selected working hours was ${rating} at ${formatTime(highestRisk.hour.time)}. ${highestRisk.result.reason}`;
       return {
         rating,
         riskHour: highestRisk.hour,
@@ -1832,8 +1860,8 @@
     }
 
     function recalculateForecastRatings() {
-      const validThresholds = validateThresholds();
-      if (!validThresholds) {
+      const validSettings = validateSettings();
+      if (!validSettings) {
         forecastDays.forEach((day) => {
           day.ratings = null;
           day.hours.forEach((hour) => {
@@ -1848,6 +1876,10 @@
         };
         forecastDays.forEach((day) => {
           day.hours.forEach((hour) => {
+            hour.ratings = null;
+          });
+          const workingHours = getWorkingHours(day);
+          workingHours.forEach((hour) => {
             hour.ratings = {};
             activityDefinitions.forEach(({ key }) => {
               hour.ratings[key] = getHourlyActivityResult(hour, key, thresholds);
@@ -1855,14 +1887,22 @@
           });
           day.ratings = {};
           activityDefinitions.forEach(({ key }) => {
-            day.ratings[key] = calculateDailyActivity(day, key);
+            day.ratings[key] = calculateDailyActivity(workingHours, key);
           });
         });
       }
 
+      updateWorkingPeriodText();
       if (forecastDays.length) {
         renderCalendar();
         selectForecastDay(selectedDayIndex);
+      }
+      if (forecastDays.length && forecastStatus.dataset.state !== "loading" && forecastStatus.dataset.state !== "error") {
+        const state = validSettings ? "success" : "info";
+        const message = validSettings
+          ? `Seven-day hourly forecast loaded for ${jobsiteTimeZone}. Activity ratings use ${getWorkingPeriodLabel()}.`
+          : `Forecast loaded for ${jobsiteTimeZone}; ratings are unavailable until all settings are valid.`;
+        setForecastMessage(state, message);
       }
     }
 
@@ -1888,27 +1928,27 @@
         ratingElement.replaceChildren(createRatingBadge(result ? result.rating : null, label));
         document.querySelector(`#detail-${key}-reading`).textContent = result
           ? getActivityReading(result.riskHour, key)
-          : "Ratings unavailable until all threshold settings are valid.";
+          : "Ratings unavailable until all settings are valid.";
         document.querySelector(`#detail-${key}-risk`).textContent = result
           ? `Highest-risk hour: ${formatTime(result.riskHour.time)} (${result.rating})`
           : "Highest-risk hour: unavailable";
         document.querySelector(`#detail-${key}-explanation`).textContent = result
           ? result.explanation
-          : "Correct the invalid threshold setting to calculate this activity.";
+          : "Correct the invalid threshold or working-hour setting to calculate this activity.";
       });
     }
 
-    function renderMissingWarning(day) {
+    function renderMissingWarning(workingHours) {
       const affected = activityDefinitions
         .map(({ key, label }) => ({
           label,
-          count: day.hours.filter((hour) => hasMissingWeather(hour, key)).length
+          count: workingHours.filter((hour) => hasMissingWeather(hour, key)).length
         }))
         .filter(({ count }) => count > 0);
 
       missingWarning.hidden = affected.length === 0;
       if (affected.length) {
-        const summary = affected.map(({ label, count }) => `${label}: ${count} of 10 hour(s)`).join("; ");
+        const summary = affected.map(({ label, count }) => `${label}: ${count} of ${workingHours.length} hour(s)`).join("; ");
         missingWarning.textContent = `Missing working-hour data: ${summary}. Missing data is rated CAUTION unless known hourly conditions establish NO-GO.`;
       } else {
         missingWarning.textContent = "";
@@ -1938,12 +1978,16 @@
 
       document.querySelector("#detail-heading").textContent = formatLocalDate(day.date);
       document.querySelector("#detail-timezone").textContent = jobsiteTimeZone;
-      document.querySelector("#detail-intro").textContent = `Daily ratings use the worst hourly result from 7:00 AM through 4:00 PM in ${jobsiteTimeZone} local time.`;
+      const validSettings = validateSettings();
+      const workingHours = validSettings ? getWorkingHours(day) : [];
+      document.querySelector("#detail-intro").textContent = validSettings
+        ? `Daily ratings use the worst hourly result from ${formatTime(workdayStart.value)} (inclusive) to ${formatTime(workdayEnd.value)} (exclusive) in ${jobsiteTimeZone} local time.`
+        : "Correct the invalid settings to calculate ratings for this day.";
       renderActivityDetails(day);
-      renderMissingWarning(day);
+      renderMissingWarning(workingHours);
 
       hourlyBody.replaceChildren();
-      day.hours.forEach((hour) => {
+      workingHours.forEach((hour) => {
         const row = document.createElement("tr");
         appendCell(row, formatTime(hour.time));
         [
@@ -1972,9 +2016,8 @@
       forecastDays = collectForecastDays(payload, timezone);
       selectedDayIndex = 0;
       calendarGrid.dataset.loaded = "true";
-      document.querySelector("#calendar-hint").textContent = `Select a date to view hourly weather and activity ratings for 7:00 AM-4:00 PM in ${timezone}.`;
       recalculateForecastRatings();
-      setForecastMessage("success", `Seven-day hourly forecast loaded for ${timezone}. Activity ratings use the worst result during the fixed workday.`);
+      setForecastMessage("success", `Seven-day hourly forecast loaded for ${timezone}. Activity ratings use ${getWorkingPeriodLabel()}.`);
     }
 
     async function loadForecast(latitude, longitude, requestId, signal) {
@@ -2065,22 +2108,42 @@
         });
     }
 
-    function validateThresholds() {
-      const invalid = thresholdFields.filter(({ input }) => !input.checkValidity());
-      if (invalid.length === 0) {
+    function validateSettings() {
+      const invalidThresholds = thresholdFields.filter(({ input }) => !input.validity.valid);
+      const invalidStart = !workdayStart.validity.valid;
+      const invalidEnd = !workdayEnd.validity.valid;
+      const startIsNotEarlier = !invalidStart && !invalidEnd && workdayStart.value >= workdayEnd.value;
+      const invalidSettings = invalidThresholds.length > 0 || invalidStart || invalidEnd || startIsNotEarlier;
+
+      workdayStart.setAttribute("aria-invalid", String(invalidStart || startIsNotEarlier));
+      workdayEnd.setAttribute("aria-invalid", String(invalidEnd || startIsNotEarlier));
+      thresholdFields.forEach(({ input }) => {
+        input.setAttribute("aria-invalid", String(!input.validity.valid));
+      });
+
+      if (!invalidSettings) {
         settingsValidation.hidden = true;
         settingsValidation.textContent = "";
         return true;
       }
 
-      settingsValidation.textContent = invalid.map(({ input, min, max, unit }) => {
+      const messages = invalidThresholds.map(({ input, min, max, unit }) => {
         return `${input.labels[0].textContent} must be between ${min} and ${max} ${unit}.`;
-      }).join(" ");
+      });
+      if (invalidStart || invalidEnd) {
+        messages.push("Workday start and end must be valid whole-hour times within the same day.");
+      } else if (startIsNotEarlier) {
+        messages.push("Workday start must be earlier than workday end; overnight periods are not supported.");
+      }
+      settingsValidation.textContent = messages.join(" ");
       settingsValidation.hidden = false;
       return false;
     }
 
-    thresholdFields.forEach(({ input }) => input.addEventListener("input", recalculateForecastRatings));
+    [...thresholdFields.map(({ input }) => input), workdayStart, workdayEnd].forEach((input) => {
+      input.addEventListener("input", recalculateForecastRatings);
+      input.addEventListener("change", recalculateForecastRatings);
+    });
 
     if (typeof L === "undefined") {
       setMapError("The interactive map library could not be loaded. Check your connection and reload the page.");

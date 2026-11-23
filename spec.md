@@ -12,7 +12,7 @@ Create a responsive web dashboard that helps construction managers compare crane
 - Crane wind limit: labeled number input in miles per hour (mph), default 30 mph, valid range 10-60 mph.
 - Concrete minimum temperature: labeled number input in degrees Fahrenheit (°F), default 40 °F, valid range 20-60 °F.
 - Roofing precipitation threshold: labeled number input in percent (%), default 30%, valid range 0-100%.
-- Working hours: fixed at 7:00 AM-5:00 PM in the jobsite's local timezone for the initial version. Editable start and end time inputs are added later as the Custom Working Hours feature.
+- Working hours: fixed at 7:00 AM-5:00 PM in the jobsite's local timezone for the initial version. Custom Working Hours adds whole-hour start and end inputs in the jobsite's local timezone, matching the hourly forecast resolution. Require the start to be earlier than the end; overnight periods are not supported.
 - Forecast period: fixed at the next 7 days. The forecast is downloaded automatically from Open-Meteo and limited to working hours for daily ratings.
 
 ## Calculations
@@ -81,6 +81,7 @@ The following two extra features are implemented separately, only after the requ
 ### Custom Working Hours
 - This feature comes from the assignment's suggested ideas.
 - Allow users to change the workday start and end times from the fixed initial hours of 7:00 AM-5:00 PM in the jobsite's local timezone.
+- Accept same-day whole-hour values only, require the start to be earlier than the end, include the start hour, and exclude the end hour.
 - Automatically recalculate daily weather ratings using the selected hours.
 
 ### Printable Jobsite Weather Report
@@ -192,8 +193,8 @@ Build and validate the stages in order. Complete and validate all required app f
 - Commit the completed stage.
 
 ### Stage 5: Adding Custom Working Hours
-- **Build:** As the first extra feature, add start/end time controls defaulting to 7:00 AM-5:00 PM in the jobsite's local timezone and recalculate daily ratings when they change.
-- **Check:** Verify valid time ranges, selected-hour inclusion behavior, recalculated day ratings/details, and that restoring the defaults reproduces the required app's ratings.
+- **Build:** As the first extra feature, add whole-hour start/end controls defaulting to 7:00 AM-5:00 PM in the jobsite's local timezone. Require valid same-day periods with the start before the end, and recalculate daily ratings when they change.
+- **Check:** Verify valid and invalid time ranges, inclusion of the selected start hour and exclusion of the end hour, recalculated day ratings/details, and that restoring the defaults reproduces the required app's ratings.
 - **Builds on:** Extends the validated fixed-hours calculation without changing the earlier required workflow.
 - Commit the completed stage.
 
