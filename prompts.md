@@ -66,3 +66,18 @@ This file records the requests made to the AI coding agent, what was changed, an
 - Browser-tested boundary fixtures: crane 28 mph gust and 27 mph wind = CAUTION, 30 mph = NO-GO; concrete 40°F and 45°F = CAUTION and 39°F = NO-GO; roofing 15% and 30% = CAUTION and 31% = NO-GO. Verified worst-hour precedence, missing values/timestamps, known NO-GO overriding missing-data CAUTION, and inclusion of 7:00 AM through 4:00 PM while excluding 5:00 PM.
 - Also verified threshold changes caused no second API request, invalid thresholds withheld ratings, a simulated HTTP 503 cleared stale results and recovered, and the live Open-Meteo forecast still loaded. Desktop (1280 px) and mobile (375 px) layouts had no page-level horizontal overflow; the hourly table scrolls within its container on mobile. `git diff --check` passed.
 - Worked: successfully; Stage 3 only is ready for user testing. Custom Working Hours, the printable report, later stages, and a Git commit were not added.
+
+## 2026-11-22
+- Asked to collect Denver Open-Meteo hourly weather data for Stage 4 validation, record its retrieval time and forecast date, list the spec's default thresholds, identify the NWS hourly forecast endpoint, and defer calculations, app changes, publishing, and commits.
+- Retrieved the actual Open-Meteo forecast for 39.7392, -104.9903 with America/Denver local time. At 2026-11-22 16:55:19.027 -07:00, confirmed 2026-11-28 was the latest forecast date with all ten 7:00 AM-4:00 PM timestamps and all requested values present. Identified the Denver NWS point and hourly forecast endpoints.
+- Worked: successfully; the raw weather table and threshold defaults were provided in the response. No hand ratings or forecast comparisons were calculated, no application file was changed, and no Git commit was created.
+
+## 2026-11-22
+- Asked to hand-check the November 28 Denver data against the app using the exact saved forecast, document inputs/calculations/app results in the Validation section, and avoid a fresh forecast, publishing, rule changes, or a commit.
+- Browser-tested the app with a fixture containing the exact ten captured Open-Meteo records for November 28. The app returned Crane GO, Concrete CAUTION, and Roofing GO, matching the hand calculations; no new API forecast was requested. Added the saved input table, default thresholds, hand calculations, app results, and match outcome to spec.md's Validation section.
+- Worked: successfully; all three ratings match. No calculation rules or application code were changed, nothing was published, and no Git commit was created.
+
+## 2026-11-22
+- Asked to compare the saved November 28 Denver Open-Meteo forecast with the NWS hourly forecast, calculate absolute differences for matching hourly temperature, wind, and precipitation values, document the comparison in spec.md, record NWS retrieval time, and avoid app changes, publishing, or a commit.
+- Retrieved all ten NWS hourly periods for November 28 from 7:00 AM through 4:00 PM at 2026-11-22 16:59:02.519 -07:00. Calculated hourly absolute differences against the saved Open-Meteo values and added the values, difference table, retrieval details, and a brief explanation of forecast variation to spec.md's Validation section.
+- Worked: successfully; matching NWS data was available for all ten hours. No application code was changed, nothing was published, and no Git commit was created.

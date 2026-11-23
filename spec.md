@@ -106,6 +106,52 @@ The following two extra features are implemented separately, only after the requ
 - Retrieve the National Weather Service hourly forecast for the same location and date. Compare matching hourly temperature, wind speed, and precipitation probability values with the Open-Meteo values, using consistent local timestamps and units.
 - Record the forecast values and differences for the matching hours. Forecasts from the two services are not required to agree exactly; this comparison documents differences and is not a pass/fail test of either provider.
 
+#### Denver validation run: 2026-11-28
+- Requested location: Denver, Colorado (39.7392, -104.9903); timezone: America/Denver. The Open-Meteo request was retrieved on 2026-11-22 at 4:55:19.027 PM (UTC-07:00). The response reported coordinates 39.746895, -104.987076.
+- The latest complete date in the seven-day forecast was Saturday, November 28, 2026. All ten working-hour timestamps and all four requested weather values were present.
+- The exact captured hourly data used for hand calculations and the app check:
+
+| Local time | Temperature (°F) | Sustained wind (mph) | Wind gust (mph) | Precipitation probability (%) |
+|---|---:|---:|---:|---:|
+| 7:00 AM | 45.3 | 1.7 | 13.4 | 7 |
+| 8:00 AM | 44.9 | 4.3 | 12.3 | 7 |
+| 9:00 AM | 43.6 | 6.2 | 10.7 | 7 |
+| 10:00 AM | 41.9 | 8.0 | 8.7 | 7 |
+| 11:00 AM | 40.8 | 8.7 | 7.2 | 7 |
+| 12:00 PM | 40.5 | 7.9 | 5.8 | 5 |
+| 1:00 PM | 40.7 | 6.0 | 4.5 | 5 |
+| 2:00 PM | 40.9 | 5.4 | 4.3 | 5 |
+| 3:00 PM | 41.4 | 5.7 | 5.4 | 5 |
+| 4:00 PM | 42.0 | 6.1 | 7.4 | 5 |
+
+- Default thresholds used: crane wind limit 30 mph (90% caution boundary: 27 mph); concrete minimum 40°F (caution band: 40-45°F inclusive); roofing precipitation threshold 30% (caution band: 15-30% inclusive).
+- Hand calculations:
+  - **Crane lifts:** Maximum sustained wind was 8.7 mph and maximum gust was 13.4 mph. Both are below the 27 mph caution boundary, so the expected daily rating is **GO**.
+  - **Concrete pours:** Minimum temperature was 40.5°F. This is within the 40-45°F caution band, so the expected daily rating is **CAUTION**.
+  - **Roofing:** Maximum precipitation probability was 7%. This is below the 15% caution boundary, so the expected daily rating is **GO**.
+- App check: Loaded these exact ten saved records as the forecast response fixture for the November 28 test date; no new forecast was downloaded for the calculation check. The app displayed Crane **GO** (highest-risk hour 7:00 AM), Concrete **CAUTION** (highest-risk hour 12:00 PM), and Roofing **GO** (highest-risk hour 7:00 AM). The app's hourly weather values matched the table above.
+- Hand-calculated and app results match for all three activities: **Yes**.
+
+##### NWS forecast comparison
+- NWS hourly forecast retrieved on 2026-11-22 at 4:59:02.519 PM (UTC-07:00) from `https://api.weather.gov/gridpoints/BOU/63,62/forecast/hourly`. The NWS point lookup for 39.7392, -104.9903 resolves to grid BOU/63,62 and timezone America/Denver.
+- All ten matching November 28 hourly periods from 7:00 AM through 4:00 PM were available, with local timestamps carrying the -07:00 offset. NWS temperature values are in °F, wind speeds in mph, and precipitation probabilities in percent.
+- Absolute differences are calculated as `|Open-Meteo value - NWS value|`. Precipitation differences are percentage points.
+
+| Local time | Open-Meteo temp (°F) | NWS temp (°F) | Abs. diff (°F) | Open-Meteo wind (mph) | NWS wind (mph) | Abs. diff (mph) | Open-Meteo precip (%) | NWS precip (%) | Abs. diff (percentage points) |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| 7:00 AM | 45.3 | 39 | 6.3 | 1.7 | 5 | 3.3 | 7 | 3 | 4 |
+| 8:00 AM | 44.9 | 41 | 3.9 | 4.3 | 5 | 0.7 | 7 | 3 | 4 |
+| 9:00 AM | 43.6 | 46 | 2.4 | 6.2 | 5 | 1.2 | 7 | 3 | 4 |
+| 10:00 AM | 41.9 | 51 | 9.1 | 8.0 | 5 | 3.0 | 7 | 3 | 4 |
+| 11:00 AM | 40.8 | 56 | 15.2 | 8.7 | 5 | 3.7 | 7 | 3 | 4 |
+| 12:00 PM | 40.5 | 59 | 18.5 | 7.9 | 5 | 2.9 | 5 | 3 | 2 |
+| 1:00 PM | 40.7 | 61 | 20.3 | 6.0 | 5 | 1.0 | 5 | 3 | 2 |
+| 2:00 PM | 40.9 | 62 | 21.1 | 5.4 | 5 | 0.4 | 5 | 3 | 2 |
+| 3:00 PM | 41.4 | 61 | 19.6 | 5.7 | 5 | 0.7 | 5 | 3 | 2 |
+| 4:00 PM | 42.0 | 59 | 17.0 | 6.1 | 3 | 3.1 | 5 | 3 | 2 |
+
+- The forecasts differ because the providers can use different models, grid resolutions and terrain representations, data assimilation, update cycles, and forecaster adjustments. This comparison records the differences; exact agreement is not expected.
+
 ## Out of Scope
 - The planned Custom Working Hours and Printable Jobsite Weather Report features remain in scope and are not excluded below.
 - No user accounts or login.
